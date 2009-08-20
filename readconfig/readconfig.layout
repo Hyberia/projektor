@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="ReadConfigLib.cpp" open="0" top="0" tabpos="1">
+		<Cursor position="543" topLine="19" />
+	</File>
+	<File name="configDefinitions.h" open="0" top="0" tabpos="0">
+		<Cursor position="397" topLine="0" />
+	</File>
+	<File name="readconfig.cpp" open="1" top="1" tabpos="1">
+		<Cursor position="2525" topLine="0" />
+	</File>
+	<File name="readconfig.h" open="0" top="0" tabpos="2">
+		<Cursor position="455" topLine="2" />
+	</File>
+</CodeBlocks_layout_file>
