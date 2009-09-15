@@ -1,0 +1,87 @@
+touei README
+============
+
+1) Authors and thanks
+----------------
+
+Mathieu Charron
+James
+
+contribution from:
+
+
+2) Licensing
+------------
+
+Eiffel Forum License, version 2
+
+1. Permission is hereby granted to use, copy, modify and/or
+   distribute this package, provided that:
+      * copyright notices are retained unchanged,
+      * any distribution of this package, whether modified or not,
+        includes this license text.
+2. Permission is hereby also granted to distribute binary programs
+   which depend on this package. If the binary program depends on a
+   modified version of this package, you are encouraged to publicly
+   release the modified version of this package.
+
+THIS PACKAGE IS PROVIDED "AS IS" AND WITHOUT WARRANTY. ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE AUTHORS BE LIABLE TO ANY PARTY FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
+
+3) Requirements
+---------------
+
+* Python 2.6
+* C compiler (like gcc)
+* mkvtoolnix
+* MPlayer with demuxer for you video files
+* Custom xorg configuration (optional)
+* Your video file with specific filename
+* Enough of disk space for the video creation
+
+@TODO: Missing how to configure xorg and initrc
+@TODO: add source for software
+
+
+4) Installation
+---------------
+
+** filename pattern **
+First you need to rename your file according to a specific pattern:
+* The first 4 characters are the time the video will be played in
+  24 hours format (4h00 PM = 1600).
+  You time need to comply to a _modulus 5_. Si 1604 is not valid.
+* A dot ".*
+* The name of the video. it will be used for the subtitling of the
+  introduction video (and as a unique filename).
+  NO SPACE. Use underscore, they will be replace by space.
+* The ".mkv" string for extension.
+
+if you want to play "Higurashi no Naku Koro ni" at 3h45 pm the filename
+will be:
+> 1545.Higurashi_no_Naku_Koro_ni.mkv
+
+** File structure **
+
+@TODO: Fill this
+
+** Crontab **
+
+Add run.py to the crontab to run every minute. that's it.
+
+
+5) Configuration
+----------------
+
+Please see the touei.conf.sample for the configuration instruction
+
+6) Sit back
+-----------
+
+And enjoy a relatively stress-free projection system.
+
+# EOF
