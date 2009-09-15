@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Writer: Mathieu
 # Date: 10 Juin 2009
 #
@@ -25,7 +26,10 @@ this is the ToueiUtils module part of the Touei project.
 please see http://elwillow.net/x/touei for more info.
 """
 
+__author__ = "Mathieu Charron"
+__license__ = "Eiffel Version 2"
 __version__ = "0.1"
+__revision__ = ""
 
 
 def ConvertDec2Time(dTime):
