@@ -23,6 +23,8 @@
 
 """
 this is the mkvutils module part of the Touei project.
+This module do some sanity check before muxing the mkv. It also
+control the creation of the subtitle file.
 please see http://elwillow.net/touei for more info.
 """
 
@@ -31,7 +33,36 @@ __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
 
-
+import subprocess,re
 class MkvUtils():
-    def ping():
-        return "Pong!"
+        
+    def mkvTime(self,fileName):
+        """Return the time in second of the specified filename.
+        If return is 0, it means it couldn't get a time."""
+        cmd = "mkvinfo " + fileName
+        reg_exp = re.compile("^\|\ \+\ Duration\:\ (\d+)\.(\d+)\S+")
+        times = ()
+    
+        # Run the command
+        mkvinfo = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, \
+                                                    close_fds=True)
+        
+        # Read each line
+        for line in mkvinfo.stdout.readlines():
+            m = reg_exp.match(line)
+            if m:
+                times = m.groups(0);
+
+        # We found some times
+        if times:
+            if times[1] > 500:
+                seconds = int(times[0]) + 1
+            else:
+                seconds = times[0] + 0
+        else:
+            # Could not find the time or is not a MKV file
+            return 0
+            
+        return seconds
+
+# EOF

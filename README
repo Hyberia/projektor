@@ -9,6 +9,10 @@ James
 
 contribution from:
 
+Thanks to:
+The MPlayer project for their outstanding player
+Matroska for their great container that don't suck.
+
 
 2) Licensing
 ------------
@@ -77,11 +81,13 @@ Add run.py to the crontab to run every minute. that's it.
 5) Configuration
 ----------------
 
-Please see the touei.conf.sample for the configuration instruction
+Please see the touei.conf.sample for the configuration instruction.
 
-6) Sit back
+6) Reference
 -----------
 
-And enjoy a relatively stress-free projection system.
+Subtitle: http://www.matroska.org/technical/specs/subtitles/ssa.html
+Video Container: http://www.matroska.org/node/46
+
 
 # EOF

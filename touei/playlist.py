@@ -34,6 +34,7 @@ __revision__ = ""
 
 import sqlite3 as sqlite
 import os,sys,datetime
+from mkvutils import MkvUtils
 
 class DBUnavailableException(Exception): pass
 class DBExistsException(Exception): pass
@@ -113,6 +114,7 @@ class PlayList():
             raise NoFilesException()
         
         schedule = {}
+        mkvUtils = MkvUtils()
         for path in presentations.keys():
             #Get the relative path from the root dir.
             # rootDirLen + 1 removes the slash between the relative path and the "root"
@@ -123,6 +125,7 @@ class PlayList():
                 print "Reason: Is a subfolder"
                 continue
             
+            
             try:
                 int(relPath)
             except Exception,e:
@@ -130,9 +133,39 @@ class PlayList():
                 print "Dropping: " + relPath
                 print "Reason: Not a number"
                 continue
+            
+            day = relPath
+            
             if len(presentations[path]) == 0:
                 #Nothing for that day
+                print "Nothing to be added for " + relPath
                 continue
+            
+            
+            schedule[day] = {}
+            for video in presentations[path]:
+                parts = video.split('.')
+                if len(parts) != 3:
+                    print "Dropping: "+ video
+                    print "Reason: Filename " + video + " could not be splitted."
+                    continue
+                
+                if schedule[day].has_key(parts[0]):
+                    print "Conflict: Filename: " + video + " is in conflict with " + schedule[day][parts[0]]
+                else:
+                    title = parts[1].replace('_',' ').strip('[]')
+                    file = path + "/" + video
+                    
+                    duration = mkvUtils.mkvTime(file)
+                    
+                    presentationInfo = {}
+                    presentationInfo['time'] = parts[0]
+                    presentationInfo['file'] = file
+                    presentationInfo['title'] = title
+                    presentationInfo['duration'] = duration
+                    schedule[day][parts[0]] = presentationInfo
+            
+            print schedule
     
     def _getFiles(self,dir):
         '''Get all the mkv files from dir (and bellow)'''
