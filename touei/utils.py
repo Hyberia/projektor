@@ -35,7 +35,7 @@ __revision__ = ""
 def ConvertDec2Time(dTime):
     """
     Receive a decimal time (like 0930) and return a mktime with
-    the current date.
+    the current time.
     """
     
 def CheckPlayer(pidFile):

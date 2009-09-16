@@ -32,4 +32,62 @@ __version__ = "0.1"
 __revision__ = ""
 
 class PlayerCtrl():
-    pass
+    """Allow a certain abstraction layer for the mplayer control"""
+    
+    def __init__(self, f):
+        """Open the control file for the slave control
+        WARNING: THE PLAYER MUST RUN BEFORE OPENING THE FILE or the
+        command won't go through."""
+        
+        self.controlFile = os.open(f, os.O_WRONLY)
+        #status("DEBUG CRAP! FIX IT BEFORE LIVE DEPLOYMENT",1)
+        #status("PlayerControl.__init__: Opening file " + f)
+
+    def load(self, path):
+        """Load a file in the player, then send fullscreen request"""
+        
+        #status("PlayerControl.load: loading " + path,-1)
+        # Check if we receive a playlist
+        if path.split(".")[1] == "pls":
+            #status("PlayerControl.load: We received a playlist", -1)
+            os.write(self.controlFile, "loadlist %s\n" % path)
+        else:
+            #status("PlayerControl.load: We received a file", -1)
+            os.write(self.controlFile, "loadfile %s\n" % path)
+
+        # force fullscreen, just to be sure
+        # //@TODO: Shouldn't be needed. I'm sure there is a more elegant
+        #        way of doing this -elwillow
+        os.write(self.controlFile, "vo_fullscreen 1\n")
+        return 0
+
+    def loadFiller(self, paths, force=False):
+        """Load filler. they are append and will be longer than
+        the remaining time before the next slot. If force=True well,
+        force the first file to play."""
+
+        #status("PlayerControl.loadFiller: Number of filler: " + str(len(paths)),-1)
+        #status("PlayerControl.loadFiller: Force filling: " + str(force),-1)
+        for path in paths:
+            if force:
+                # Force play
+                os.write(self.controlFile, "loadfile %s\n" % path)
+                #status("Force load Filling video " + path,-1)
+                force = False
+            else:
+                os.write(self.controlFile, "loadfile %s 1\n" % path)
+        return 0
+
+    def seek(self, seekTime):
+        """Seek into the video by seekTime minute. Converted to second
+        when send to the player."""
+        
+        #status("PlayerControl.seek: Wait 2 sec and seek " + str(seekTime) + " in", -1)
+        time.sleep(2)
+        os.write(self.controlFile, "seek +" + str(seekTime*60) + "\n")
+        return 0
+
+    def shutdown(self):
+        """Close the control file. Should be call at the end."""
+        os.close(self.controlFile)
+        return 0
