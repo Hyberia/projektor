@@ -46,7 +46,8 @@ class PlayList():
         self._schema = []
         self._schema.append('''create table presentations(
                             id integer primary key autoincrement,
-                            date int,
+                            datetime_start integer,
+                            datetime_end integer,
                             file varchar(255),
                             title varchar(255),
                             duration int
@@ -60,8 +61,11 @@ class PlayList():
                             )''')
         
         self._queries = {}
-        self._queries['store'] = 'insert into presentations (date,file,title,duration) values(?,?,?,?);'
-        self._queries['getAll'] = 'select * from presentations order by date ASC;'
+        self._queries['store'] = 'insert into presentations (datetime_start,datetime_end,file,title,duration) values(?,?,?,?,?);'
+        self._queries['getAll'] = 'select * from presentations order by datetime_start ASC;'
+        self._queries['getNext'] = 'select * from presentations where datetime_start > ? order by datetime_start ASC;'
+        self._queries['getPrevious'] = 'select * from presentations where datetime_start < ? order by datetime_start ASC;'
+        self._queries['getCurrent'] = 'select * from presentations where datetime_start <= ? and datetime_end >= ?';
         self._rootDir = None
         self._createDb()
     
@@ -70,9 +74,7 @@ class PlayList():
         self._rootDir = rootDir
         self._storeSchedule(self._parseFiles())
     
-    def get(self):
-        '''Find a playable file for the current datetime and return it'''
-        pass
+
     
     def getPlayList(self):
         cursor = None
@@ -85,14 +87,60 @@ class PlayList():
             return None
         return rows
     
+    def get(self):
+        '''Find a playable file for the current datetime and return it'''
+        video = None
+        date = self._getFormattedDateTime()
+        try:
+            cursor = self._db.cursor()
+            video = cursor.execute(self._queries['getCurrent'], (date,date)).fetchone()
+        except Exception,e:
+            print e
+            return False
+        finally:
+            cursor.close()
+        
+        return video
+        
     def getPrevious(self):
         '''Find what was scheduled to previously play'''
-        pass
+        
+        current = self.get()
+        if current:
+            datetime_start = current['datetime_start'] - 1
+        else:
+            datetime_start = self._getFormattedDateTime()
+            
+        video = None
+        try:
+            cursor = self._db.cursor()
+            video = cursor.execute(self._queries['getPrevious'], (datetime_start,)).fetchone()
+        except Exception,e:
+            print e
+            return False
+        finally:
+            cursor.close()
+        
+        return video
     
     def getNext(self):
         '''Find what is coming up'''
-        pass
+        
+        video = None
+        try:
+            cursor = self._db.cursor()
+            video = cursor.execute(self._queries['getNext'], (self._getFormattedDateTime(),)).fetchone()
+        except Exception,e:
+            print e
+            return False
+        finally:
+            cursor.close()
+        
+        return video
     
+    def _getFormattedDateTime(self):
+        return datetime.datetime.now().strftime("%Y%m%d%H%M")
+        
     def _getFormattedTime(self):
         return datetime.datetime.now().strftime("%H%M")
         
@@ -150,12 +198,13 @@ class PlayList():
         
         for date in schedule.keys():
             for time in schedule[date].keys():
-                fdate = schedule[date][time]['date']
+                datetime_start = schedule[date][time]['datetime_start']
+                datetime_end = schedule[date][time]['datetime_end']
                 file = schedule[date][time]['file']
                 title = schedule[date][time]['title']
                 duration = schedule[date][time]['duration']
                 try:
-                    cursor.execute(self._queries['store'],(fdate,file,title,duration,))
+                    cursor.execute(self._queries['store'],(datetime_start,datetime_end,file,title,duration,))
                 except Exception,e:
                     print e
                     cursor.close()
@@ -224,7 +273,8 @@ class PlayList():
                     duration = mkvUtils.mkvTime(file)
                     
                     presentationInfo = {}
-                    presentationInfo['date'] = self._getFormattedDate() + parts[0]
+                    presentationInfo['datetime_start'] = self._getFormattedDate() + parts[0]
+                    presentationInfo['datetime_end'] = int(presentationInfo['datetime_start']) + (duration / 60)
                     presentationInfo['file'] = file
                     presentationInfo['title'] = title
                     presentationInfo['duration'] = duration
@@ -254,3 +304,6 @@ if __name__ == "__main__":
     p = PlayList()
     p.load('/home/masom/dev/videos')
     print p.getPlayList()
+    print p.get()
+    print p.getNext()
+    print p.getPrevious()
