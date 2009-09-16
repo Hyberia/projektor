@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Writer: Mathieu
 # Date: 10 Juin 2009
 #
@@ -20,13 +21,15 @@
 # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
-
 """
 this is the mkvutils module part of the Touei project.
 please see http://elwillow.net/touei for more info.
 """
 
+__author__ = "Mathieu Charron"
+__license__ = "Eiffel Version 2"
 __version__ = "0.1"
+__revision__ = ""
 
 
 class MkvUtils():

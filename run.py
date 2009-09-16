@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# Writer: Mathieu
+# Date: 10 Juin 2009
 #
 # Eiffel Forum License, version 2
 #

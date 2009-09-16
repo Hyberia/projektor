@@ -1,3 +1,7 @@
+#!/usr/bin/python
+# Writer: Mathieu
+# Date: 10 Juin 2009
+#
 # Eiffel Forum License, version 2
 #
 # 1. Permission is hereby granted to use, copy, modify and/or
@@ -20,7 +24,10 @@
 """Touei is a Projection management controller for projection room at an
    Anime Convention"""
 
+__author__ = "Mathieu Charron"
+__license__ = "Eiffel Version 2"
 __version__ = "0.1"
+__revision__ = ""
 
 __all__ = ["player", "playlist", "mkvutils", "utils"]
 
