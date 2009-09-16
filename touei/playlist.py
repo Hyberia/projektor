@@ -59,12 +59,18 @@ class PlayList():
                             duration int
                             )''')
         
-        self._date = datetime.datetime.now()
+        self._queries = {}
+        self._queries['store'] = 'insert into presentations (date,file,title,duration) values(?,?,?,?);'
         
     def _getFormattedTime(self):
-        return self._date.strftime("%H%M")
+        return datetime.datetime.now().strftime("%H%M")
+        
     def _getCurDay(self):
-        return self._date.strftime("%D");
+        return datetime.datetime.now().strftime("%d");
+    
+    def _getFormattedDate(self):
+        return datetime.datetime.now().strftime("%Y%m%d")
+        
     def _createDb(self):
         '''Create the database if it is not already initialized.'''
         
@@ -102,6 +108,35 @@ class PlayList():
         self._db = None
         return True
     
+    def _storeSchedule(self,schedule):
+        cursor = None
+        try:
+            cursor = self._db.cursor()
+        except Exception,e:
+            print e
+            return False
+        
+        for date in schedule.keys():
+            for time in schedule[date].keys():
+                fdate = schedule[date][time]['date']
+                file = schedule[date][time]['file']
+                title = schedule[date][time]['title']
+                duration = schedule[date][time]['duration']
+                try:
+                    cursor.execute(self._queries['store'],(fdate,file,title,duration,))
+                except Exception,e:
+                    print e
+                    cursor.close()
+                    self._db.rollback()
+                    return False
+        try:
+            cursor.close()
+            self._db.commit()
+        except Exception,e:
+            print e
+            return False
+        return True
+                
     def _parseFiles(self):
         '''Parses files and prepare them for playback.'''
         
@@ -159,13 +194,13 @@ class PlayList():
                     duration = mkvUtils.mkvTime(file)
                     
                     presentationInfo = {}
-                    presentationInfo['time'] = parts[0]
+                    presentationInfo['date'] = self._getFormattedDate() + parts[0]
                     presentationInfo['file'] = file
                     presentationInfo['title'] = title
                     presentationInfo['duration'] = duration
                     schedule[day][parts[0]] = presentationInfo
             
-            print schedule
+        return schedule
     
     def _getFiles(self,dir):
         '''Get all the mkv files from dir (and bellow)'''
@@ -184,4 +219,6 @@ class PlayList():
         return videos
 p = PlayList()
 p._createDb()
-p._parseFiles()
+schedule = p._parseFiles()
+print schedule
+p._storeSchedule(schedule)
