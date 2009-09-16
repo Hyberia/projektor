@@ -39,20 +39,25 @@ class MkvUtils():
     def mkvTime(self,fileName):
         """Return the time in second of the specified filename.
         If return is 0, it means it couldn't get a time."""
-        cmd = "mkvinfo " + fileName
         reg_exp = re.compile("^\|\ \+\ Duration\:\ (\d+)\.(\d+)\S+")
         times = ()
-    
+        #fileName = fileName.replace(' ', '\ ')
+
         # Run the command
-        mkvinfo = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, \
+        try:
+            mkvinfo = subprocess.Popen(['mkvinfo', fileName], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, \
                                                     close_fds=True)
-        
+        except Exception,e:
+            print e
+            return 0
         # Read each line
         for line in mkvinfo.stdout.readlines():
+            print line
             m = reg_exp.match(line)
             if m:
                 times = m.groups(0);
-
+        
+        print times
         # We found some times
         if times:
             if times[1] > 500:
