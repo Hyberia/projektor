@@ -41,7 +41,6 @@ class MkvUtils():
         If return is 0, it means it couldn't get a time."""
         reg_exp = re.compile("^\|\ \+\ Duration\:\ (\d+)\.(\d+)\S+")
         times = ()
-        #fileName = fileName.replace(' ', '\ ')
 
         # Run the command
         try:
@@ -52,12 +51,9 @@ class MkvUtils():
             return 0
         # Read each line
         for line in mkvinfo.stdout.readlines():
-            print line
             m = reg_exp.match(line)
             if m:
                 times = m.groups(0);
-        
-        print times
         # We found some times
         if times:
             if times[1] > 500:
