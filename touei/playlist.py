@@ -33,6 +33,7 @@ import os,sys,datetime
 
 class DBUnavailableException(Exception): pass
 class DBExistsException(Exception): pass
+class NoFilesException(Exception): pass
 
 class PlayList():
     def __init__(self):
@@ -92,7 +93,7 @@ class PlayList():
             self._db.close()
         except Exception,e:
             return False
-        
+        #TODO help me
         self._db = None
         return True
     
