@@ -62,8 +62,9 @@ class PlayList():
         
     def _getFormattedTime(self):
         return self._date.strftime("%H%M")
-
-    def _CreateDb(self):
+    def _getCurDay(self):
+        return self._date.strftime("%D");
+    def _createDb(self):
         '''Create the database if it is not already initialized.'''
         
         if self._db:
@@ -89,7 +90,7 @@ class PlayList():
             
         return True
     
-    def _CloseDb(self):
+    def _closeDb(self):
         '''Close the database connection'''
         if not self._db:
             raise DBUnavailableException()
@@ -97,19 +98,41 @@ class PlayList():
             self._db.close()
         except Exception,e:
             return False
-        #TODO help me
         self._db = None
         return True
     
     def _parseFiles(self):
         '''Parses files and prepare them for playback.'''
-        presentations = self._getFiles('/home/masom/video')
+        
+        #rootDir = #Config# + "/" + self._getCurDay()
+        rootDir = '/home/masom/dev/videos'
+        rootDirLen = len(rootDir)
+        presentations = self._getFiles(rootDir)
         
         if len(presentations.keys()) == 0:
             raise NoFilesException()
         
-        print presentations
-        
+        schedule = {}
+        for path in presentations.keys():
+            #Get the relative path from the root dir.
+            # rootDirLen + 1 removes the slash between the relative path and the "root"
+            relPath = path[rootDirLen + 1:]
+            subFolders = relPath.split('/')
+            if len(subFolders) > 1:
+                print "Dropping: " + relPath
+                print "Reason: Is a subfolder"
+                continue
+            
+            try:
+                int(relPath)
+            except Exception,e:
+                #We got something that is not a integer
+                print "Dropping: " + relPath
+                print "Reason: Not a number"
+                continue
+            if len(presentations[path]) == 0:
+                #Nothing for that day
+                continue
     
     def _getFiles(self,dir):
         '''Get all the mkv files from dir (and bellow)'''
@@ -126,3 +149,6 @@ class PlayList():
                 videos[path].append(file)
                 
         return videos
+p = PlayList()
+p._createDb()
+p._parseFiles()
