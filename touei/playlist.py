@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Writer: Mathieu,Martin
+# Writer: Mathieu
 # Date: 10 Juin 2009
 #
 # Eiffel Forum License, version 2
@@ -26,7 +26,7 @@ this is the Playlist module part of the Touei project.
 please see http://elwillow.net/touei for more info.
 """
 
-__author__ = "Mathieu Charron"
+__author__ = "Martin Samson"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
@@ -61,6 +61,14 @@ class PlayList():
         
         self._queries = {}
         self._queries['store'] = 'insert into presentations (date,file,title,duration) values(?,?,?,?);'
+        
+        self._rootDir = None
+        self._createDb()
+    
+    def load(self,rootDir):
+        '''Load a playlist from a directory'''
+        self._rootDir = rootDir
+        self._storeSchedule(self._parseFiles())
         
     def _getFormattedTime(self):
         return datetime.datetime.now().strftime("%H%M")
@@ -139,9 +147,7 @@ class PlayList():
                 
     def _parseFiles(self):
         '''Parses files and prepare them for playback.'''
-        
-        #rootDir = #Config# + "/" + self._getCurDay()
-        rootDir = '/home/masom/dev/videos'
+        rootDir = self._rootdir
         rootDirLen = len(rootDir)
         presentations = self._getFiles(rootDir)
         
@@ -177,6 +183,7 @@ class PlayList():
                 continue
             
             
+            videoCount = 0
             schedule[day] = {}
             for video in presentations[path]:
                 parts = video.split('.')
@@ -199,7 +206,9 @@ class PlayList():
                     presentationInfo['title'] = title
                     presentationInfo['duration'] = duration
                     schedule[day][parts[0]] = presentationInfo
+                    videoCount += 1
             
+        print "PlayList: " + str(videoCount) + " videos."
         return schedule
     
     def _getFiles(self,dir):
@@ -217,8 +226,7 @@ class PlayList():
                 videos[path].append(file)
                 
         return videos
-p = PlayList()
-p._createDb()
-schedule = p._parseFiles()
-print schedule
-p._storeSchedule(schedule)
+    
+if __name__ == "__main__":
+    p = PlayList()
+    p.load()
