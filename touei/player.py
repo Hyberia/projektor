@@ -33,19 +33,19 @@ __revision__ = ""
 
 class PlayerCtrl():
     """Allow a certain abstraction layer for the mplayer control"""
-    
+
     def __init__(self, f):
         """Open the control file for the slave control
         WARNING: THE PLAYER MUST RUN BEFORE OPENING THE FILE or the
         command won't go through."""
-        
+
         self.controlFile = os.open(f, os.O_WRONLY)
         #status("DEBUG CRAP! FIX IT BEFORE LIVE DEPLOYMENT",1)
         #status("PlayerControl.__init__: Opening file " + f)
 
     def load(self, path):
         """Load a file in the player, then send fullscreen request"""
-        
+
         #status("PlayerControl.load: loading " + path,-1)
         # Check if we receive a playlist
         if path.split(".")[1] == "pls":
@@ -56,7 +56,7 @@ class PlayerCtrl():
             os.write(self.controlFile, "loadfile %s\n" % path)
 
         # force fullscreen, just to be sure
-        # //@TODO: Shouldn't be needed. I'm sure there is a more elegant
+        # @TODO: Shouldn't be needed. I'm sure there is a more elegant
         #        way of doing this -elwillow
         os.write(self.controlFile, "vo_fullscreen 1\n")
         return 0
@@ -81,7 +81,7 @@ class PlayerCtrl():
     def seek(self, seekTime):
         """Seek into the video by seekTime minute. Converted to second
         when send to the player."""
-        
+
         #status("PlayerControl.seek: Wait 2 sec and seek " + str(seekTime) + " in", -1)
         time.sleep(2)
         os.write(self.controlFile, "seek +" + str(seekTime*60) + "\n")
