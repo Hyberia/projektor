@@ -61,7 +61,7 @@ class PlayList():
         
         self._queries = {}
         self._queries['store'] = 'insert into presentations (date,file,title,duration) values(?,?,?,?);'
-        
+        self._queries['getAll'] = 'select * from presentations order by date ASC;'
         self._rootDir = None
         self._createDb()
     
@@ -69,7 +69,30 @@ class PlayList():
         '''Load a playlist from a directory'''
         self._rootDir = rootDir
         self._storeSchedule(self._parseFiles())
-        
+    
+    def get(self):
+        '''Find a playable file for the current datetime and return it'''
+        pass
+    
+    def getPlayList(self):
+        cursor = None
+        try:
+            cursor = self._db.cursor()
+            rows = cursor.execute(self._queries['getAll']).fetchall()
+            cursor.close();
+        except Exception,e:
+            print e
+            return None
+        return rows
+    
+    def getPrevious(self):
+        '''Find what was scheduled to previously play'''
+        pass
+    
+    def getNext(self):
+        '''Find what is coming up'''
+        pass
+    
     def _getFormattedTime(self):
         return datetime.datetime.now().strftime("%H%M")
         
@@ -88,6 +111,7 @@ class PlayList():
         #Create the database in RAM instead of on-disk.
         try:
             self._db = sqlite.connect(":memory:")
+            self._db.row_factory = sqlite.Row
         except Exception,e:
             raise e
         
@@ -147,9 +171,8 @@ class PlayList():
                 
     def _parseFiles(self):
         '''Parses files and prepare them for playback.'''
-        rootDir = self._rootdir
-        rootDirLen = len(rootDir)
-        presentations = self._getFiles(rootDir)
+        rootDirLen = len(self._rootDir)
+        presentations = self._getFiles(self._rootDir)
         
         if len(presentations.keys()) == 0:
             raise NoFilesException()
@@ -229,4 +252,5 @@ class PlayList():
     
 if __name__ == "__main__":
     p = PlayList()
-    p.load()
+    p.load('/home/masom/dev/videos')
+    print p.getPlayList()
