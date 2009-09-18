@@ -67,5 +67,6 @@ if __name__ == "__main__":
     logging.getLogger('touei_logger').addHandler(console)
     print config.get('logs','main_log'), config.get('logs', 'level')
     print logging.WARNING
+
     #Check if it works
     touei_logger.critical("Application run complete")
