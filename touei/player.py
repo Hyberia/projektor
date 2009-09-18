@@ -23,7 +23,6 @@ __version__ = "0.1"
 __revision__ = ""
 
 import sys,os
-
 class SocketLocationException(): pass
 class CommandEmptyException(): pass
 class CommandMalformedException(): pass
@@ -43,15 +42,16 @@ class PlayerInterface():
         self.socketLocation = socketLocation
         self.socket = None
         
+        #Will lock until mplayer is listening.
         try:
-            self.socket = os.open(socketLocation, os.O_WRONLY)
+           self.socket = os.open(socketLocation, os.O_WRONLY)
         except Exception,e:
             raise e
         
         self._commands = {}
         self._commands['open_file'] = "loadfile %s\n"
         self._commands['open_playlist'] = "loadlist %s\n"
-        self._commands['fullscreen'] = "vo_fullscreen %c\n"
+        self._commands['fullscreen'] = "vo_fullscreen %d\n"
         self._commands['seek'] = "seek %c%d\n"
         
     def __del__(self):
@@ -116,8 +116,7 @@ class PlayerInterface():
         else:
             command = self._commands['open_file'] % fileLocation
         if self._execute(command):
-            #TODO: Do we need to force fullscreen? (elwillow)
-            self.fullscreen(True)
+            print self.fullscreen(True)
             return True
         else:
             return False
@@ -142,7 +141,7 @@ if __name__ == "__main__":
     pl = PlayList()
     pl.load('/home/masom/dev/videos')
     file = pl.getNext()
-    print file
+    print file['file']
     
     p = PlayerInterface("/tmp/mplayer")
     print p.openFile(file['file'])
