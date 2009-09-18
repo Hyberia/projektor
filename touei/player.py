@@ -23,9 +23,9 @@ __version__ = "0.1"
 __revision__ = ""
 
 import sys,os
-class SocketLocationException(): pass
-class CommandEmptyException(): pass
-class CommandMalformedException(): pass
+class SocketLocationException(Exception): pass
+class CommandEmptyException(Exception): pass
+class CommandMalformedException(Exception): pass
 
 class PlayerInterface():
     """Abstraction class to Mplayer"""
@@ -53,8 +53,8 @@ class PlayerInterface():
         self._commands['open_playlist'] = "loadlist %s\n"
         self._commands['fullscreen'] = "vo_fullscreen %d\n"
         self._commands['seek'] = "seek %c%d\n"
-        self._commands['pause'] = "pause"
-        self._commands['stop'] = "stop"
+        self._commands['pause'] = "pause\n"
+        self._commands['stop'] = "stop\n"
         
     def __del__(self):
         try:
@@ -152,6 +152,6 @@ if __name__ == "__main__":
     file = pl.getNext()
     print file['file']
     
-    p = PlayerInterface("/tmp/mplayer")
+    p = PlayerInterface("/tmp/mplayers")
     print p.openFile(file['file'])
     
