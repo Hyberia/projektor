@@ -1,7 +1,3 @@
-#!/usr/bin/python
-# Writer: Mathieu
-# Date: 10 Juin 2009
-#
 # Eiffel Forum License, version 2
 #
 # 1. Permission is hereby granted to use, copy, modify and/or
@@ -21,73 +17,120 @@
 # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
-"""
-this is the PlayerCtrl module part of the Touei project.
-please see http://elwillow.net/touei for more info.
-"""
-
-__author__ = "Mathieu Charron"
+__author__ = "Martin Samson"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
 
-class PlayerCtrl():
-    """Allow a certain abstraction layer for the mplayer control"""
+import sys,os
 
-    def __init__(self, f):
-        """Open the control file for the slave control
-        WARNING: THE PLAYER MUST RUN BEFORE OPENING THE FILE or the
-        command won't go through."""
+class SocketLocationException(): pass
+class CommandEmptyException(): pass
+class CommandMalformedException(): pass
 
-        self.controlFile = os.open(f, os.O_WRONLY)
-        #status("DEBUG CRAP! FIX IT BEFORE LIVE DEPLOYMENT",1)
-        #status("PlayerControl.__init__: Opening file " + f)
+class PlayerInterface():
+    """Abstraction class to Mplayer"""
 
-    def load(self, path):
-        """Load a file in the player, then send fullscreen request"""
+    def __init__(self, socketLocation):
+        '''@param string socketLocation The location of the communication socket'''
+        
+        if not socketLocation:
+            raise SocketLocationException('Empty')
+        if not os.path.isfile(socketLocation):
+            raise SocketLocationException('File not found')
+            
+        self.socketLocation = socketLocation
+        try:
+            self.socket = os.open(socketLocation, os.O_WRONLY)
+        except Exception,e:
+            raise e
+        
+        self._commands = {}
+        self._commands['open_file'] = "loadfile %s\n"
+        self._commands['open_playlist'] = "loadlist %s\n"
+        self._commands['fullscreen'] = "vo_fullscreen %c\n"
+        self._commands['seek'] = "seek %c%d\n"
+        
+    def __del__(self):
+        try:
+            os.close(self.socket)
+        except Exception,e:
+            print e
+            return False
+        return True
 
-        #status("PlayerControl.load: loading " + path,-1)
-        # Check if we receive a playlist
-        if path.split(".")[1] == "pls":
-            #status("PlayerControl.load: We received a playlist", -1)
-            os.write(self.controlFile, "loadlist %s\n" % path)
+    def _communicate(self,command):
+        '''Communicate with mplayer thru the socket. Does some basic command verifications
+        @param string command A command to mplayer.
+        @return boolean True/False
+        '''
+        if not command:
+            raise CommandEmptyException()
+
+        if not command.endswith("\n"):
+            raise CommandMalformedException()
+        try:
+            os.write(self.socket, command)
+        except Exception,e:
+            raise e
+        
+        return True
+    
+    def _execute(self,command):
+        '''Execute a given command with exception catching
+        @param string command The command to execute
+        @return boolean True/False'''
+        try:
+            result = self._communicate(command)
+        except Exception,e:
+            print e
+            return False
+        return result
+    
+    def fullscreen(self, enabled):
+        '''Turn on/off fullscreeen
+        @param boolean enabled True/False
+        @return boolean True/False
+        '''
+        command = None
+        if enabled:
+            command = self._commands['fullscreen'] % True
         else:
-            #status("PlayerControl.load: We received a file", -1)
-            os.write(self.controlFile, "loadfile %s\n" % path)
+            command = self._commands['fullscreen'] % False
+        
+        return self._execute(command)
+            
+        
+    def openFile(self, fileLocation):
+        '''Open a file
+        @param string fileLocation The location of the file
+        @return boolean
+        '''
+        command = None
+        if fileLocation.endswith('.pls'):
+            #We got a playlist
+            command = self._commands['open_playlist'] % fileLocation
+        else:
+            command = self._commands['open_file'] % fileLocation
+        if self._execute(command):
+            #TODO: Do we need to force fullscreen? (elwillow)
+            self.fullscreen(True)
+            return True
+        else:
+            return False
 
-        # force fullscreen, just to be sure
-        # @TODO: Shouldn't be needed. I'm sure there is a more elegant
-        #        way of doing this -elwillow
-        os.write(self.controlFile, "vo_fullscreen 1\n")
-        return 0
+    def seek(self, forward, seekTime):
+        """
+        @param boolean forward Going forward(True) or backward(False)
+        @param integer seekTime Seek by how many minutes
+        @return boolean True/False
+        """
+        if forward:
+            direction = "+"
+        else:
+            direction = "-"
+            
+        command = self._commands['seek'] % (direction, seekTime * 60)
+        
+        return self._execute(command)
 
-    def loadFiller(self, paths, force=False):
-        """Load filler. they are append and will be longer than
-        the remaining time before the next slot. If force=True well,
-        force the first file to play."""
-
-        #status("PlayerControl.loadFiller: Number of filler: " + str(len(paths)),-1)
-        #status("PlayerControl.loadFiller: Force filling: " + str(force),-1)
-        for path in paths:
-            if force:
-                # Force play
-                os.write(self.controlFile, "loadfile %s\n" % path)
-                #status("Force load Filling video " + path,-1)
-                force = False
-            else:
-                os.write(self.controlFile, "loadfile %s 1\n" % path)
-        return 0
-
-    def seek(self, seekTime):
-        """Seek into the video by seekTime minute. Converted to second
-        when send to the player."""
-
-        #status("PlayerControl.seek: Wait 2 sec and seek " + str(seekTime) + " in", -1)
-        time.sleep(2)
-        os.write(self.controlFile, "seek +" + str(seekTime*60) + "\n")
-        return 0
-
-    def shutdown(self):
-        """Close the control file. Should be call at the end."""
-        os.close(self.controlFile)
-        return 0
