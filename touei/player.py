@@ -49,7 +49,7 @@ class PlayerInterface():
             raise e
         
         self._commands = {}
-        self._commands['open_file'] = "loadfile %s\n"
+        self._commands['open_file'] = "loadfile %s %d\n"
         self._commands['open_playlist'] = "loadlist %s\n"
         self._commands['fullscreen'] = "vo_fullscreen %d\n"
         self._commands['seek'] = "seek %c%d\n"
@@ -113,9 +113,10 @@ class PlayerInterface():
         return self._execute(command)
             
         
-    def openFile(self, fileLocation):
+    def openFile(self, fileLocation, append=False):
         '''Open a file
         @param string fileLocation The location of the file
+        @param boolean append Append to the current mplayer playlist (True) or play the file (False)
         @return boolean
         '''
         command = None
@@ -123,7 +124,7 @@ class PlayerInterface():
             #We got a playlist
             command = self._commands['open_playlist'] % fileLocation
         else:
-            command = self._commands['open_file'] % fileLocation
+            command = self._commands['open_file'] % (fileLocation, append)
         if self._execute(command):
             print self.fullscreen(True)
             return True
