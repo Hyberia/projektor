@@ -53,6 +53,8 @@ class PlayerInterface():
         self._commands['open_playlist'] = "loadlist %s\n"
         self._commands['fullscreen'] = "vo_fullscreen %d\n"
         self._commands['seek'] = "seek %c%d\n"
+        self._commands['pause'] = "pause"
+        self._commands['stop'] = "stop"
         
     def __del__(self):
         try:
@@ -89,7 +91,14 @@ class PlayerInterface():
             print e
             return False
         return result
+    def pause(self):
+        '''Pause/Unpause (depending on player status)'''
+        
+        return self._execute(self._commands['pause'])
     
+    def stop(self):
+        '''Stop the playback'''
+        return self._execute(self._commands['stop'])
     def fullscreen(self, enabled):
         '''Turn on/off fullscreeen
         @param boolean enabled True/False
