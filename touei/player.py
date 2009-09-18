@@ -35,11 +35,14 @@ class PlayerInterface():
         '''@param string socketLocation The location of the communication socket'''
         
         if not socketLocation:
-            raise SocketLocationException('Empty')
-        if not os.path.isfile(socketLocation):
-            raise SocketLocationException('File not found')
+            raise SocketLocationException()
+            
+        if not os.path.exists(socketLocation):
+            raise SocketLocationException()
             
         self.socketLocation = socketLocation
+        self.socket = None
+        
         try:
             self.socket = os.open(socketLocation, os.O_WRONLY)
         except Exception,e:
@@ -134,3 +137,13 @@ class PlayerInterface():
         
         return self._execute(command)
 
+if __name__ == "__main__":
+    from playlist import PlayList
+    pl = PlayList()
+    pl.load('/home/masom/dev/videos')
+    file = pl.getNext()
+    print file
+    
+    p = PlayerInterface("/tmp/mplayer")
+    print p.openFile(file['file'])
+    
