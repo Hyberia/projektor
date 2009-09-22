@@ -17,13 +17,15 @@
 # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
-__author__ = "Martin Samson"
+__author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
+__contributors__='''Mathieu Charron, Martin Samson'''
 
 import sys,os
 class SocketLocationException(Exception): pass
+class SocketException(Exception): pass
 class CommandEmptyException(Exception): pass
 class CommandMalformedException(Exception): pass
 
@@ -57,6 +59,9 @@ class PlayerInterface():
         self._commands['stop'] = "stop\n"
         
     def __del__(self):
+        if not self.socket:
+            return False
+
         try:
             os.close(self.socket)
         except Exception,e:
@@ -69,11 +74,15 @@ class PlayerInterface():
         @param string command A command to mplayer.
         @return boolean True/False
         '''
+        if not self.socket:
+            raise SocketException()
+ 
         if not command:
             raise CommandEmptyException()
 
         if not command.endswith("\n"):
             raise CommandMalformedException()
+
         try:
             os.write(self.socket, command)
         except Exception,e:
