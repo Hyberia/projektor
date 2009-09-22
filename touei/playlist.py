@@ -138,8 +138,8 @@ class PlayList():
         
         return video
     
-    def _getFormattedDateTime(self):
-        return datetime.datetime.now().strftime("%Y%m%d%H%M")
+    def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
+        return datetime.datetime.now().strftime(format)
         
     def _getFormattedTime(self):
         return datetime.datetime.now().strftime("%H%M")
@@ -147,8 +147,8 @@ class PlayList():
     def _getCurDay(self):
         return datetime.datetime.now().strftime("%d");
     
-    def _getFormattedDate(self):
-        return datetime.datetime.now().strftime("%Y%m%d")
+    def _getFormattedDate(self, format = "%Y%m%d"):
+        return datetime.datetime.now().strftime(format)
         
     def _createDb(self):
         '''Create the database if it is not already initialized.'''
@@ -273,7 +273,7 @@ class PlayList():
                     duration = mkvUtils.mkvTime(file)
                     
                     presentationInfo = {}
-                    presentationInfo['datetime_start'] = self._getFormattedDate() + parts[0]
+                    presentationInfo['datetime_start'] = self._getFormattedDate("%Y%m") + day + parts[0]
                     presentationInfo['datetime_end'] = int(presentationInfo['datetime_start']) + (duration / 60)
                     presentationInfo['file'] = file
                     presentationInfo['title'] = title
