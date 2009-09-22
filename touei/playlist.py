@@ -287,7 +287,7 @@ class PlayList():
     def _getFiles(self,dir):
         '''Get all the mkv files from dir (and bellow)'''
         videos = {}
-        for path, dirs, files in os.walk(dir):
+        for path, dirs, files in os.walk(dir,True,None,True):
         
             for file in files:
                 if not file.endswith('.mkv'):
