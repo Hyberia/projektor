@@ -52,6 +52,3 @@ CONFIG_DEFAULT_VALUE={"pid": "/var/pid/touei.pid",
 from mkvutils import *
 from playlist import *
 from player import *
-
-# Load function
-from utils import *
