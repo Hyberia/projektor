@@ -45,6 +45,10 @@ block_duration: 60
 ; Default: /home/video
 location: /home/video
 
+; Location for the intro/outro files
+; default: /tmp/touei
+tmp-location: /tmp/touei
+
 ; Location of the recovery video. It will be play after we started mplayer
 ; Default: %(location)/recovery.mkv
 recovery: %(location)/recovery.mkv
