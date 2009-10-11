@@ -46,6 +46,7 @@ import time
 import os
 import sys
 import touei
+from touei import *
 
 
 if __name__ == "__main__":
@@ -67,6 +68,9 @@ if __name__ == "__main__":
     logging.getLogger('touei_logger').addHandler(console)
     print config.get('logs','main_log'), config.get('logs', 'level')
     print logging.WARNING
+
+    print touei
+    print player.__version__
 
     #Check if it works
     touei_logger.critical("Application run complete")
