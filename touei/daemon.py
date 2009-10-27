@@ -21,7 +21,7 @@
 __author__ ="GAnime"
 __contributors__ = "Martin Samson <pyrolian@gmail.com>"
 
-import time
+import time,signal
 class ToueiDaemon():
     def __init__(self):
         self._tasks = []
@@ -39,6 +39,9 @@ class ToueiDaemon():
             self._tasks.insert(task)
             
     def run(self):
+        
+        self._daemonize()
+        
         while(self._isRunning):
             while(len(self._tasks) and self._isRunning):
                 #Execute the task
@@ -52,7 +55,7 @@ class ToueiDaemon():
     def _signalHandler(self,signal,frame):
         self._isRunning = False
 
-    def daemonize(self):
+    def _daemonize(self):
         """Daemonize the process
     
         @return void
@@ -113,3 +116,7 @@ class ToueiDaemon():
                 os.setuid(userinfo[2])
             except OSError, e:
                 pass
+            
+if __name__ == "__main__":
+    d = ToueiDaemon()
+    d.run()
