@@ -24,12 +24,11 @@
 """Touei is a Projection management controller for projection room at an
    Anime Convention"""
 
-__author__ = "Mathieu Charron"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
 
-__all__ = ["player", "playlist", "mkvutils", "utils"]
+__all__ = ["player", "playlist", "mkvutils"]
 
 CONFIG_DEFAULT_VALUE={"pid": "/var/pid/touei.pid",
                       "slave_socket": "/tmp/touei_slave.fifo",
@@ -40,15 +39,10 @@ CONFIG_DEFAULT_VALUE={"pid": "/var/pid/touei.pid",
                       "recovery_time": "70",
                       "block_duration": "60",
                       "location": "/home/video",
+                      "tmp-location": "/tmp/touei",
                       "recovery": "%(location)/recovery.mkv",
                       "standby": "%(location)/standby.mkv",
                       "intro": "%(location)/intro.mkv",
                       "outro": "%(location)/outro.mkv",
                       "countdown": "%(location)/countdown.mkv",
                       }
-
-
-# Load sub modules
-from mkvutils import *
-from playlist import *
-from player import *
