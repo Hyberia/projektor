@@ -12,7 +12,8 @@ namespace ReadConfig
     char *trim(char *str);
     char *ShiftCharsLeft(int startposition,int positions,char* str);
     char* ReadConfParameter(char* ConfigPath,char* ConfigParam);
-    char *ReplaceVars(char* ConfigPath,char* ConfParam);
+    int ReplaceVars(char* ConfigPath,char* ConfParam);
+    void ReplaceTrailGarbage(char * str);
     bool ISSPACE_C(char* c);
 }
 /*class ReadConfig

@@ -39,15 +39,17 @@ char* ReadConfig::ReadConfParameter(char* ConfigPath,char* ConfigParam)
 
                 ShiftCharsLeft(0,strlen(assmbly)+1,(char*)s);
                 trim((char*)s);
+                ReplaceTrailGarbage((char *)s);
 
                 //Replace variables in string
-                ReplaceVars(ConfigPath,(char*)s);
+                int replaced = ReplaceVars(ConfigPath,(char*)s);
 
 
-                char* ParamValue = new char[strlen(s)-strlen(assmbly)];
-               // fclose(f);
-                strcat(ParamValue,s);
-                printf("%s",s);
+                char* ParamValue=new char[strlen(s)];
+                ParamValue[0]='/0';
+                fclose(f);
+                strcpy(ParamValue,s);
+                return ParamValue;
             }
 
         }
@@ -58,7 +60,7 @@ char* ReadConfig::ReadConfParameter(char* ConfigPath,char* ConfigParam)
 }
 
 //Replaces variables defined in Parameter by the actual value
-char *ReadConfig::ReplaceVars(char* ConfigPath,char* ConfParam)
+int ReadConfig::ReplaceVars(char* ConfigPath,char* ConfParam)
 {
     for(int i=0;ConfParam[i]!='\0';i++)
     {
@@ -89,6 +91,7 @@ char *ReadConfig::ReplaceVars(char* ConfigPath,char* ConfParam)
 
                     strcat(tmpcpy,ConfParam);
                     strcpy(ConfParam,tmpcpy);
+                    return 1;
                 }
                 else //Variable in the middle of string
                 {
@@ -99,7 +102,20 @@ char *ReadConfig::ReplaceVars(char* ConfigPath,char* ConfParam)
             }
         }
     }
-    return ConfParam;
+    return 0;
+}
+
+//Removes trailing \r \n that may be present
+void ReadConfig::ReplaceTrailGarbage(char* str)
+{
+    for(int i=0;i<strlen(str);i++)
+    {
+        if(str[i]=='\r' || str[i] == '\n')
+        {
+            str[i]='\0';
+            return;
+        }
+    }
 }
 
 //Shifts all characters after startposition by the specified # of positions to the left

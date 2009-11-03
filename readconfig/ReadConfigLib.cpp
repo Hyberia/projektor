@@ -1,6 +1,7 @@
 //ReadConfigLib.cpp : Used so c or c++ may use this(wrapper)
 #include <iostream>
 #include <cstdio>
+#include <cstdlib>
 #include "ReadConfigLib.h"
 #include "configDefinitions.h"
 #include "readconfig.h"
@@ -18,7 +19,7 @@ int main()
     char* test=ReadConfParam("sampleconfig.conf",conf_COUNTDOWN);
     if(test!=NULL)
     {
-        printf(test);
+        printf("%s",test);
     }
     return 0;
 }
