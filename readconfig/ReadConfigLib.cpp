@@ -10,7 +10,7 @@ using namespace std;
 
 
 //Turns Debug code on remove on production by adding // in front
-#define DEBUG
+//#define DEBUG
 
 
 #ifdef DEBUG

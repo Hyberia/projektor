@@ -10,7 +10,8 @@
 #include <stdio.h>      /* header for fprintf() */
 #include <unistd.h>     /* header for fork(), getcwd() */
 #include <stdlib.h>
-#include <limits.h>
+#include "libreadconfig.h"
+#define PATH_MAX 4096
 //void  ChildProcess(void);                /* child process prototype  */
 //void  ParentProcess(void);               /* parent process prototype */
 #define DAEMON_NAME "toueid"
@@ -84,6 +85,18 @@ int  main(int argc, char *argv[])
 	/* Our process ID and Session ID */
     pid_t pid, sid;
     int rc,mpStart;
+    char * ConfigValue;
+    char CurrentPath[PATH_MAX];
+
+    GetExecutingPath(&CurrentPath);
+
+    CurrentPath[strlen(CurrentPath)]= '//';
+
+    ConfigValue = ReadConfParam("/etc/touei.conf","slave_socket");
+
+
+
+    //get current directory
 
 	//daemonize=0;
 	//if (daemonize) {
@@ -127,7 +140,8 @@ int  main(int argc, char *argv[])
 	//	close(STDERR_FILENO);
 	//
 	//} /* End Daemonization */
- system("gedit");
+	printf("%s",CurrentPath);
+  //  system("gedit");
 	//Checking loop
 	while(1){
 		  /* mplayer check */
@@ -175,7 +189,7 @@ int  main(int argc, char *argv[])
 //Gets the directory in which the application is running
 void GetExecutingPath(char* buffer)
 {
-	if(readlink("/proc/self/exe",buffer,sizeof(buffer)-1)==-1)
+	if(readlink("/proc/self/exe",buffer,PATH_MAX)==-1)
 		printf('Error reading symlink');
 
 }
