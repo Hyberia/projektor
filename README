@@ -48,7 +48,7 @@ DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 * MPlayer with demuxer for you video files
 * Custom xorg configuration (optional)
 * Your video file with specific filename
-* Enough of disk space for the video creation
+* Enough of disk space for the video muxing
 
 @TODO: Missing how to configure xorg and initrc
 @TODO: add source for software
@@ -60,9 +60,9 @@ DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 ** filename pattern **
 First you need to rename your file according to a specific pattern:
 * The first 4 characters are the time the video will be played in
-  24 hours format (4h00 PM = 1600).
-  You time need to comply to a _modulus 5_. Si 1604 is not valid.
-* A dot ".*
+  24 military hours format (4h00 PM = 1600).
+  You time need to comply to a _modulus 5_. 1604 is not valid.
+* A dot "."
 * The name of the video. it will be used for the subtitling of the
   introduction video (and as a unique filename).
   NO SPACE. Use underscore, they will be replace by space.
@@ -75,10 +75,6 @@ will be:
 ** File structure **
 
 @TODO: Fill this
-
-** Crontab **
-
-Add run.py to the crontab to run every minute. that's it.
 
 
 5) Configuration

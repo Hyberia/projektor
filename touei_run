@@ -23,7 +23,6 @@
 
 """Main script for the Touei project. Need the Touei modules"""
 
-__author__ = "Mathieu Charron"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
