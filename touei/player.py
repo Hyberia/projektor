@@ -17,11 +17,14 @@
 # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
+"""
+Provide an abstraction layer to control mplayer via the slave command.
+"""
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
-__contributors__='''Mathieu Charron, Martin Samson'''
+__contributors__= "Mathieu Charron, Martin Samson"
 
 import sys,os
 class SocketLocationException(Exception): pass
@@ -106,8 +109,10 @@ class PlayerInterface():
         return self._execute(self._commands['pause'])
 
     def stop(self):
-        '''Stop the playback'''
+        """Stop the playback.
+        """
         return self._execute(self._commands['stop'])
+
     def fullscreen(self, enabled):
         """Turn on/off fullscreeen
         @param boolean enabled True/False
@@ -120,7 +125,6 @@ class PlayerInterface():
             command = self._commands['fullscreen'] % False
 
         return self._execute(command)
-
 
     def openFile(self, fileLocation, append=False):
         """Open a file
@@ -156,6 +160,7 @@ class PlayerInterface():
         return self._execute(command)
 
 if __name__ == "__main__":
+    print "##### DEBUG ######"
     from playlist import PlayList
     pl = PlayList()
     pl.load('/home/masom/dev/videos')

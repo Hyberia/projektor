@@ -28,10 +28,11 @@ control the creation of the subtitle file.
 please see http://elwillow.net/touei for more info.
 """
 
-__author__ = "Mathieu Charron"
+__author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
+__contributors__= "Mathieu Charron, Martin Samson"
 
 # Editing the following will affect all ASS file generated within this
 # script.
@@ -67,7 +68,8 @@ class MkvUtils():
 
     def mkvTime(self,fileName):
         """Return the time in second of the specified filename.
-        If return is 0, it means it couldn't get a time."""
+        If return is 0, it means it couldn't get a time.
+        """
         reg_exp = re.compile("^\|\ \+\ Duration\:\ (\d+)\.(\d+)\S+")
         times = ()
 

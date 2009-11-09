@@ -21,17 +21,20 @@
 # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
-"""Main script for the Touei project. Need the Touei modules"""
+"""
+Main script for the Touei project. Need the Touei modules.
+"""
 
+__author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
-
-# Configuration
+__contributors__= "Mathieu Charron, Martin Samson"
 
 # Set this to your configuration file.
 # default is /etc/touei.conf
 CONFIG_FILE = "touei.conf"
+# ALL OTHER CONFIGURATION ARE DONE IN THIS FILE.
 
 
 ###
