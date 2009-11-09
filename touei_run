@@ -30,11 +30,12 @@ __revision__ = ""
 # Configuration
 
 # Set this to your configuration file.
+# default is /etc/touei.conf
 CONFIG_FILE = "touei.conf"
 
 
 ###
-# No not change anything below this!
+# Do not change anything below this!
 ###
 
 # Importation!
@@ -63,10 +64,18 @@ if __name__ == "__main__":
     touei_logger = logging.getLogger("touei")
 
     # Create the console logging
+    # @TODO The console login is not working
     console = logging.StreamHandler()
     logging.getLogger('touei_logger').addHandler(console)
-    print config.get('logs','main_log'), config.get('logs', 'level')
-    print logging.WARNING
+
+    # Do some sanity check before starting the system
+    if not os.path.isdir(config.get('video', 'location')):
+        touei_logger.warn("Can't open video location at %s" % (config.get('video', 'location'), ))
+        exit(1)
+    if not os.path.exists(config.get('video', 'intro')):
+        touei_logger.critical("Can't open intro video at %s" % (config.get('video', 'intro'), ))
+        exit(1)
+
 
     print touei
     print player.__version__
