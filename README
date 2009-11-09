@@ -58,9 +58,14 @@ DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 ---------------
 
 ** filename pattern **
+
 First you need to rename your file according to a specific pattern:
 * The first 4 characters are the time the video will be played in
+<<<<<<< TREE
   24 military hours format (4h00 PM = 1600).
+=======
+  24 hours format (4h00 PM = 1600).
+>>>>>>> MERGE-SOURCE
   You time need to comply to a _modulus 5_. 1604 is not valid.
 * A dot "."
 * The name of the video. it will be used for the subtitling of the
