@@ -1,3 +1,5 @@
+#!/usr/bin/python
+#
 # Eiffel Forum License, version 2
 #
 # 1. Permission is hereby granted to use, copy, modify and/or
