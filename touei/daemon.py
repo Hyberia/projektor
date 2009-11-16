@@ -1,4 +1,5 @@
-#!/usr/binpython
+#!/usr/bin/python
+#
 # Eiffel Forum License, version 2
 #
 # 1. Permission is hereby granted to use, copy, modify and/or
@@ -26,13 +27,13 @@ class ToueiDaemon():
     def __init__(self):
         signal.signal (signal.SIGTERM, self._signalHandler)
         signal.signal (signal.SIGHUP, self._signalHandler)
-        
+
     def stop(self):
         self._isRunning = False
-            
+
     def getCurTime(self):
         return datetime.datetime.now().strftime("%H%M")
-    
+
     def run(self):
         curTime = self.getCurTime()
         currentVideo = {}
@@ -44,7 +45,7 @@ class ToueiDaemon():
             time.sleep(10)
     def _signalHandler(self,signal,frame):
         self._isRunning = False
-            
+
 if __name__ == "__main__":
     d = ToueiDaemon()
     d.run()

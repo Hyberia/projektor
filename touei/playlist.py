@@ -1,6 +1,4 @@
 #!/usr/bin/python
-# Writer: Mathieu
-# Date: 10 Juin 2009
 #
 # Eiffel Forum License, version 2
 #
@@ -26,10 +24,11 @@ this is the Playlist module part of the Touei project.
 please see http://elwillow.net/touei for more info.
 """
 
-__author__ = "Martin Samson"
+__author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
 __revision__ = ""
+__contributors__= "Mathieu Charron, Martin Samson"
 
 
 import sqlite3 as sqlite
@@ -52,14 +51,14 @@ class PlayList():
                             title varchar(255),
                             duration int
                             )''')
-        
+
         self._schema.append('''create table fillers(
                             id integer primary key autoincrement,
                             file varchar(255),
                             title varchar(255),
                             duration int
                             )''')
-        
+
         self._queries = {}
         self._queries['store'] = 'insert into presentations (datetime_start,datetime_end,file,title,duration) values(?,?,?,?,?);'
         self._queries['getAll'] = 'select * from presentations order by datetime_start ASC;'
@@ -68,14 +67,15 @@ class PlayList():
         self._queries['getCurrent'] = 'select * from presentations where datetime_start <= ? and datetime_end >= ?';
         self._rootDir = None
         self._createDb()
-    
+
     def load(self,rootDir):
-        '''Load a playlist from a directory'''
+        """Load a playlist from a directory.
+        """
         self._rootDir = rootDir
         self._storeSchedule(self._parseFiles())
-    
 
-    
+
+
     def getPlayList(self):
         cursor = None
         try:
@@ -86,9 +86,9 @@ class PlayList():
             print e
             return None
         return rows
-    
+
     def get(self):
-        '''Find a playable file for the current datetime and return it'''
+        """Find a playable file for the current datetime and return it"""
         video = None
         date = self._getFormattedDateTime()
         try:
@@ -99,18 +99,19 @@ class PlayList():
             return False
         finally:
             cursor.close()
-        
+
         return video
-        
+
     def getPrevious(self):
-        '''Find what was scheduled to previously play'''
-        
+        """Find what was scheduled to previously play.
+        """
+
         current = self.get()
         if current:
             datetime_start = current['datetime_start'] - 1
         else:
             datetime_start = self._getFormattedDateTime()
-            
+
         video = None
         try:
             cursor = self._db.cursor()
@@ -120,12 +121,13 @@ class PlayList():
             return False
         finally:
             cursor.close()
-        
+
         return video
-    
+
     def getNext(self):
-        '''Find what is coming up'''
-        
+        """Find what is coming up.
+        """
+
         video = None
         try:
             cursor = self._db.cursor()
@@ -135,34 +137,35 @@ class PlayList():
             return False
         finally:
             cursor.close()
-        
+
         return video
-    
+
     def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
         return datetime.datetime.now().strftime(format)
-        
+
     def _getFormattedTime(self):
         return datetime.datetime.now().strftime("%H%M")
-        
+
     def _getCurDay(self):
         return datetime.datetime.now().strftime("%d");
-    
+
     def _getFormattedDate(self, format = "%Y%m%d"):
         return datetime.datetime.now().strftime(format)
-        
+
     def _createDb(self):
-        '''Create the database if it is not already initialized.'''
-        
+        """Create the database if it is not already initialized.
+        """
+
         if self._db:
             raise DBExistsException()
-        
+
         #Create the database in RAM instead of on-disk.
         try:
             self._db = sqlite.connect(":memory:")
             self._db.row_factory = sqlite.Row
         except Exception,e:
             raise e
-        
+
         cursor = None
         try:
             cursor = self._db.cursor()
@@ -174,11 +177,12 @@ class PlayList():
             raise e
         finally:
             if cursor: cursor.close()
-            
+
         return True
-    
+
     def _closeDb(self):
-        '''Close the database connection'''
+        """Close the database connection.
+        """
         if not self._db:
             raise DBUnavailableException()
         try:
@@ -187,7 +191,7 @@ class PlayList():
             return False
         self._db = None
         return True
-    
+
     def _storeSchedule(self,schedule):
         cursor = None
         try:
@@ -195,7 +199,7 @@ class PlayList():
         except Exception,e:
             print e
             return False
-        
+
         for date in schedule.keys():
             for time in schedule[date].keys():
                 datetime_start = schedule[date][time]['datetime_start']
@@ -217,15 +221,16 @@ class PlayList():
             print e
             return False
         return True
-                
+
     def _parseFiles(self):
-        '''Parses files and prepare them for playback.'''
+        """Parses files and prepare them for playback.
+        """
         rootDirLen = len(self._rootDir)
         presentations = self._getFiles(self._rootDir)
-        
+
         if len(presentations.keys()) == 0:
             raise NoFilesException()
-        
+
         schedule = {}
         mkvUtils = MkvUtils()
         for path in presentations.keys():
@@ -237,8 +242,8 @@ class PlayList():
                 print "Dropping: " + relPath
                 print "Reason: Is a subfolder"
                 continue
-            
-            
+
+
             try:
                 int(relPath)
             except Exception,e:
@@ -246,15 +251,15 @@ class PlayList():
                 print "Dropping: " + relPath
                 print "Reason: Not a number"
                 continue
-            
+
             day = relPath
-            
+
             if len(presentations[path]) == 0:
                 #Nothing for that day
                 print "Nothing to be added for " + relPath
                 continue
-            
-            
+
+
             videoCount = 0
             schedule[day] = {}
             for video in presentations[path]:
@@ -263,15 +268,15 @@ class PlayList():
                     print "Dropping: "+ video
                     print "Reason: Filename " + video + " could not be splitted."
                     continue
-                
+
                 if schedule[day].has_key(parts[0]):
                     print "Conflict: Filename: " + video + " is in conflict with " + schedule[day][parts[0]]
                 else:
                     title = parts[1].replace('_',' ').strip('[]')
                     file = path + "/" + video
-                    
+
                     duration = mkvUtils.mkvTime(file)
-                    
+
                     presentationInfo = {}
                     presentationInfo['datetime_start'] = self._getFormattedDate("%Y%m") + day + parts[0]
                     presentationInfo['datetime_end'] = int(presentationInfo['datetime_start']) + (duration / 60)
@@ -280,27 +285,29 @@ class PlayList():
                     presentationInfo['duration'] = duration
                     schedule[day][parts[0]] = presentationInfo
                     videoCount += 1
-            
+
         print "PlayList: " + str(videoCount) + " videos."
         return schedule
-    
+
     def _getFiles(self,dir):
-        '''Get all the mkv files from dir (and bellow)'''
+        """Get all the mkv files from dir (and bellow)
+        """
         videos = {}
         for path, dirs, files in os.walk(dir,True,None,True):
-        
+
             for file in files:
                 if not file.endswith('.mkv'):
                     continue
-                
+
                 if not path in videos.keys():
                     videos[path] = []
-                    
+
                 videos[path].append(file)
-                
+
         return videos
-    
+
 if __name__ == "__main__":
+    print "##### DEBUG ######"
     p = PlayList()
     p.load('/home/masom/dev/videos')
     print p.getPlayList()
