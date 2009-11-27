@@ -105,15 +105,14 @@ if __name__ == "__main__":
     # Create the Playlist instance
     playlist = playlist.PlayList()
     playlist.load(config.get("video", "location"))
+
     # Create the player instance
     player = player.PlayerInterface(config.get("core", "slave_socket"))
+
     # Call the daemon
     daemon = daemon.ToueiDaemon(playlist, player)
     # Enter the loop
     daemon.run()
 
-    print touei
-    print player.__version__
-
-    #Check if it works
+    # We're done
     touei_logger.info("Application run complete")
