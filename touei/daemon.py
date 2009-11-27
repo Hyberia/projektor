@@ -24,9 +24,12 @@ __contributors__ = "Martin Samson <pyrolian@gmail.com>"
 
 import time,signal, datetime
 class ToueiDaemon():
-    def __init__(self):
+    def __init__(self, playlist, player):
         signal.signal (signal.SIGTERM, self._signalHandler)
         signal.signal (signal.SIGHUP, self._signalHandler)
+        self._isRunning = True
+        self._Playlist = playlist
+        self._Player = player
 
     def stop(self):
         self._isRunning = False
@@ -43,6 +46,7 @@ class ToueiDaemon():
                 currentVideo = video
                 self._Player.play(video)
             time.sleep(10)
+
     def _signalHandler(self,signal,frame):
         self._isRunning = False
 
