@@ -59,10 +59,18 @@ Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
 # Last: the text itself
 ASS_EVENT = "Dialogue: 0,%s,%s,%s,,0000,0000,0000,,{\\fad(250,250)}%s\n"
 import subprocess,re
+
+# Instanciate the logging
+import logging
+module_logger = logging.getLogger("touei.mkvutils")
+
 class MkvUtils():
 
     def __init__(self):
-        pass
+        # Instanciate the logger
+        self.logger = logging.getLogger("touei.mkvutils.MkvUtils")
+        self.logger.info("Creating instance")
+
 
     def mkvTime(self,fileName):
         """Return the time in second of the specified filename.
@@ -167,31 +175,31 @@ class MkvUtils():
         """
         # check if the file exist
         if self._already_assed(presentation):
-            print "ASS: Present"
+            self.logger.debug("ASS: Present")
             # Do we have a MKV?
             if self._already_muxed(presentation):
                 # We do... do nothing
-                print "MKV: Present"
+                self.logger.debug("MKV: Present")
                 return 0
             else:
                 # We'll take the already create ASS for the muxing
-                print "MKV: Generating..."
+                self.logger.debug("MKV: Generating...")
                 self._mux_mkv(presentation)
                 return 0
         else:
-            print "ASS: Missing"
+            self.logger.debug("ASS: Missing")
             # Do we have a intro MKV?
             if self._already_muxed(presentation):
                 # strange, no ass but there is a MKV for the intro.
                 # Won't do a thing
-                print "MKV: Present"
+                self.logger.debug("MKV: Present")
                 return 0
             else:
-                print "MKV: Missing"
+                self.logger.debug("MKV: Missing")
                 # We have to generate the whole intro file
-                print "ASS: Generating..."
+                self.logger.debug("ASS: Generating...")
                 self._gen_ass(presentation)
-                print "ASS: Generating..."
+                self.logger.debug("ASS: Generating...")
                 self._mux_mkv(presentation)
                 return 0
 

@@ -23,8 +23,17 @@ __author__ ="GAnime"
 __contributors__ = "Martin Samson <pyrolian@gmail.com>"
 
 import time,signal, datetime
+
+# Instanciate the logging
+import logging
+module_logger = logging.getLogger("touei.daemon")
+
 class ToueiDaemon():
     def __init__(self, playlist, player):
+        # Instanciate the logger
+        self.logger = logging.getLogger("touei.daemon.ToueiDaemon")
+        self.logger.info("Creating instance")
+
         signal.signal (signal.SIGTERM, self._signalHandler)
         signal.signal (signal.SIGHUP, self._signalHandler)
         self._isRunning = True

@@ -35,12 +35,21 @@ import sqlite3 as sqlite
 import os,sys,datetime
 from mkvutils import MkvUtils
 
+# Instanciate the logging
+import logging
+module_logger = logging.getLogger("touei.playlist")
+
 class DBUnavailableException(Exception): pass
 class DBExistsException(Exception): pass
 class NoFilesException(Exception): pass
 
+
 class PlayList():
     def __init__(self):
+        # Instanciate the logger
+        self.logger = logging.getLogger("touei.playlist.Playlist")
+        self.logger.info("Creating instance")
+
         self._db = None
         self._schema = []
         self._schema.append('''create table presentations(
@@ -239,8 +248,8 @@ class PlayList():
             relPath = path[rootDirLen + 1:]
             subFolders = relPath.split('/')
             if len(subFolders) > 1:
-                print "Dropping: " + relPath
-                print "Reason: Is a subfolder"
+                self.logger.debug("Dropping: " + relPath)
+                self.logger.debug("Reason: Is a subfolder")
                 continue
 
 
@@ -248,15 +257,15 @@ class PlayList():
                 int(relPath)
             except Exception,e:
                 #We got something that is not a integer
-                print "Dropping: " + relPath
-                print "Reason: Not a number"
+                self.logger.debug("Dropping: " + relPath)
+                self.logger.debug("Reason: Not a number")
                 continue
 
             day = relPath
 
             if len(presentations[path]) == 0:
                 #Nothing for that day
-                print "Nothing to be added for " + relPath
+                self.logger.info("Nothing to be added for " + relPath)
                 continue
 
 
@@ -265,12 +274,12 @@ class PlayList():
             for video in presentations[path]:
                 parts = video.split('.')
                 if len(parts) != 3:
-                    print "Dropping: "+ video
-                    print "Reason: Filename " + video + " could not be splitted."
+                    self.logger.info("Dropping: "+ video)
+                    self.logger.info("Reason: Filename " + video + " could not be splitted.")
                     continue
 
                 if schedule[day].has_key(parts[0]):
-                    print "Conflict: Filename: " + video + " is in conflict with " + schedule[day][parts[0]]
+                    self.logger.info("Conflict: Filename: " + video + " is in conflict with " + schedule[day][parts[0]])
                 else:
                     title = parts[1].replace('_',' ').strip('[]')
                     file = path + "/" + video
@@ -286,7 +295,7 @@ class PlayList():
                     schedule[day][parts[0]] = presentationInfo
                     videoCount += 1
 
-        print "PlayList: " + str(videoCount) + " videos."
+        self.logger.info("PlayList: " + str(videoCount) + " videos.")
         return schedule
 
     def _getFiles(self,dir):

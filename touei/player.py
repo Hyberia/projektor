@@ -29,6 +29,11 @@ __revision__ = ""
 __contributors__= "Mathieu Charron, Martin Samson"
 
 import sys,os
+
+# Instanciate the logging
+import logging
+module_logger = logging.getLogger("touei.player")
+
 class SocketLocationException(Exception): pass
 class SocketException(Exception): pass
 class CommandEmptyException(Exception): pass
@@ -39,6 +44,10 @@ class PlayerInterface():
 
     def __init__(self, socketLocation):
         """@param string socketLocation The location of the communication socket"""
+
+        # Instanciate the logger
+        self.logger = logging.getLogger("touei.player.PlayerInterface")
+        self.logger.info("Creating instance")
 
         if not socketLocation:
             raise SocketLocationException()
@@ -102,7 +111,7 @@ class PlayerInterface():
         try:
             result = self._communicate(command)
         except Exception,e:
-            print e
+            self.logger.warn(e)
             return False
         return result
     def pause(self):
@@ -141,7 +150,7 @@ class PlayerInterface():
         else:
             command = self._commands['open_file'] % (fileLocation, append)
         if self._execute(command):
-            print self.fullscreen(True)
+            self.logger.info(self.fullscreen(True))
             return True
         else:
             return False
