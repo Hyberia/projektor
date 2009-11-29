@@ -103,15 +103,18 @@ if __name__ == "__main__":
 
     logger.info("Sanity check complete")
 
+    # Create the mkvutils instance
+    mkv = mkvutils.MkvUtils(config)
+
     # Create the Playlist instance
-    playlist = playlist.PlayList()
+    playlist = playlist.PlayList(mkv)
     playlist.load(config.get("video", "location"))
 
     # Create the player instance
     player = player.PlayerInterface(config.get("core", "slave_socket"))
 
     # Call the daemon
-    daemon = daemon.ToueiDaemon(playlist, player)
+    daemon = daemon.ToueiDaemon(playlist, player, config, mkv)
     # Enter the loop
     daemon.run()
 

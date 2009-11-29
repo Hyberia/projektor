@@ -33,7 +33,6 @@ __contributors__= "Mathieu Charron, Martin Samson"
 
 import sqlite3 as sqlite
 import os,sys,datetime
-from mkvutils import MkvUtils
 
 # Instanciate the logging
 import logging
@@ -45,11 +44,12 @@ class NoFilesException(Exception): pass
 
 
 class PlayList():
-    def __init__(self):
+    def __init__(self, mkv):
         # Instanciate the logger
         self.logger = logging.getLogger("touei.playlist.Playlist")
         self.logger.info("Creating instance")
 
+        self._MkvUtils = mkv
         self._db = None
         self._schema = []
         self._schema.append('''create table presentations(
@@ -100,6 +100,7 @@ class PlayList():
         """Find a playable file for the current datetime and return it"""
         video = None
         date = self._getFormattedDateTime()
+        self.logger.debug("Formatted Date is " + date)
         try:
             cursor = self._db.cursor()
             video = cursor.execute(self._queries['getCurrent'], (date,date)).fetchone()
@@ -197,8 +198,10 @@ class PlayList():
         try:
             self._db.close()
         except Exception,e:
+            self.logger.info("Could not close database")
             return False
         self._db = None
+        self.logger.info("Closing database")
         return True
 
     def _storeSchedule(self,schedule):
@@ -208,7 +211,7 @@ class PlayList():
         except Exception,e:
             print e
             return False
-
+        print schedule
         for date in schedule.keys():
             for time in schedule[date].keys():
                 datetime_start = schedule[date][time]['datetime_start']
@@ -217,6 +220,7 @@ class PlayList():
                 title = schedule[date][time]['title']
                 duration = schedule[date][time]['duration']
                 try:
+                    self.logger.debug("ADDING: %s,%s" % (file,title))
                     cursor.execute(self._queries['store'],(datetime_start,datetime_end,file,title,duration,))
                 except Exception,e:
                     print e
@@ -241,7 +245,6 @@ class PlayList():
             raise NoFilesException()
 
         schedule = {}
-        mkvUtils = MkvUtils()
         for path in presentations.keys():
             #Get the relative path from the root dir.
             # rootDirLen + 1 removes the slash between the relative path and the "root"
@@ -284,7 +287,7 @@ class PlayList():
                     title = parts[1].replace('_',' ').strip('[]')
                     file = path + "/" + video
 
-                    duration = mkvUtils.mkvTime(file)
+                    duration = self._MkvUtils.mkvTime(file)
 
                     presentationInfo = {}
                     presentationInfo['datetime_start'] = self._getFormattedDate("%Y%m") + day + parts[0]
@@ -318,8 +321,9 @@ class PlayList():
 if __name__ == "__main__":
     print "##### DEBUG ######"
     p = PlayList()
-    p.load('/home/masom/dev/videos')
-    print p.getPlayList()
-    print p.get()
-    print p.getNext()
-    print p.getPrevious()
+    p.load('/home/elwillow/G-Anime/screens/track3')
+    print p._getFormattedDateTime()
+    print "playlist", p.getPlayList()
+    print "get", p.get()
+    print "getNext", p.getNext()
+    print "getPrevious", p.getPrevious()
