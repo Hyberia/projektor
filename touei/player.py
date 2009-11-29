@@ -150,7 +150,9 @@ class PlayerInterface():
         else:
             command = self._commands['open_file'] % (fileLocation, append)
         if self._execute(command):
-            self.logger.info(self.fullscreen(True))
+            # Force fullscreen
+            self.fullscreen(True)
+            self.logger.debug("Command successfully send: " + command)
             return True
         else:
             return False
