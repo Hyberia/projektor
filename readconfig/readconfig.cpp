@@ -16,7 +16,7 @@ char* ReadConfig::ReadConfParameter(char* ConfigPath,char* ConfigParam)
 
     if(!f)
     {
-        return "ERR:";
+        return "ERR404";
     }
     while(fgets(s,1000,f)!=NULL) //Get Line from config
     {
