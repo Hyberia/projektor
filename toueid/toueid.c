@@ -209,7 +209,7 @@ int  main(int argc, char *argv[])
 		          //touei died...probably jew code...
 		          printf("Oh noes touei died")
 		          syslog(LOG_WARNING,"[WARN] touei died");
-		          system(CurrentPath +"touei_run --recover");
+		          system(CurrentPath +"touei_run");
 		          sleep(1);
 		      }
 		      else
@@ -233,9 +233,10 @@ int  main(int argc, char *argv[])
                   printf("Oh noes mplayer died :(");
                   syslog("[WARN] mplayer died");
                   system("mplayer -idle -slave -fs -fixed-vo -input file=" + ConfigValue);
+                  sleep(1);
               }
               //recover touei
-              system(CurrentPath +"touei_run --recover");
+              system(CurrentPath +"touei_run");
 		  }
 		  sleep(10);
 	}
