@@ -1,3 +1,11 @@
+//============================================================================
+// Name        : toueid.c
+// Author      : Jamie Nadeau
+// Contributors:
+// Version     : 0.1
+// Copyright   : Eiffel Forum License 2.0
+// Description : Daemon that launches the projection system
+//============================================================================
 #include <sys/types.h>  /* include this before any other sys headers */
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -72,6 +80,51 @@ int  main(int argc, char *argv[])
     signal(SIGINT, signal_handler);
     signal(SIGQUIT, signal_handler);
 
+    int rc,mpStart;
+    char * ConfigValue;
+    char *CurrentPath,*ConfigPath;
+    FILE *fifo;
+    register int i;
+
+    ConfigPath=malloc(16);
+    ConfigPath="/etc/touei.conf\0";
+    CurrentPath = malloc(PATH_MAX);
+
+
+    if(ConfigPath==NULL || CurrentPath==NULL)
+    {
+        printf("Failed to allocate memory for program\nExiting...\n");
+        exit(1);
+    }
+    if(argc)
+    {
+        for(i=0;i<argc;i++)
+        {
+            if(strcmp(argv[i],"-c")==0 || strcmp(argv[i],"--config")==0)
+            {
+                //Set config path
+                if (argv[i+1]==NULL){
+                    goto HELP;//I don't like goto's either...
+                }
+                ConfigPath=realloc(ConfigPath,strlen(argv[i+1])+1);
+                strcpy(ConfigPath,argv[i+1]);
+                i++;
+                continue;
+
+            }
+
+            else{
+                HELP:
+                printf("\nUSAGE:\n");
+                printf("\ttoueid [Options..]\n\n");
+                printf("\tOptions:\n");
+                printf("\t  -c, --config FILE\tSpecify the path including file name for\n\t\t\t\tan alternate config file\n");
+                printf("\t  -h,--help\t\tDisplay this output");
+
+                exit(0);
+            }
+        }
+    }
 #if defined(DEBUG)
 		setlogmask(LOG_UPTO(LOG_DEBUG));
 		openlog(DAEMON_NAME,LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
@@ -81,17 +134,16 @@ int  main(int argc, char *argv[])
 #endif
     syslog(LOG_INFO, "[INFO] %s daemon starting up",DAEMON_NAME);
 
-	/* Our process ID and Session ID */
-    int rc,mpStart;
-    char * ConfigValue;
-    char CurrentPath[PATH_MAX];
-    FILE *fifo;
 
-    GetExecutingPath(&CurrentPath);
+
+
+    GetExecutingPath(CurrentPath);
 
     CurrentPath[strlen(CurrentPath)]= '//';
 
-    ConfigValue = ReadConfParam("/home/james/G-Anime/DaeNity/touei.DaeNity/readconfig/sampleconfig.conf","slave_socket");
+    CurrentPath = realloc(CurrentPath,strlen(CurrentPath));
+
+    ConfigValue = ReadConfParam(ConfigPath,"slave_socket");
 
     //ReadConfParam could not find configuration file
     if( strcmp(ConfigValue,"ERR404")==0)
@@ -116,22 +168,22 @@ int  main(int argc, char *argv[])
     mpStart = system("ps -C mplayer -opid=");
     if(kill(mpStart,0)!=0)
     {
-        syslog(LOG_WARNING,"[WARN] mplayer is already started..");
+        system("mplayer -idle -slave -fs -fixed-vo -input file=" + ConfigValue);
     }
     else
     {
-        system("mplayer -slave -idle -input file=" + ConfigValue);
+        syslog(LOG_WARNING,"[WARN] mplayer is already started..");
     }
 
     //Check if toueid is already running
-    rc= system("ps -C run.py -opid=");
+    rc= system("ps -C touei_run -opid=");
     if(kill(rc,0)!=0)
     {
-        syslog(LOG_WARNING,"[WARN] touei projection system is already started.."
+        system(CurrentPath +"touei_run");
     }
     else
     {
-        system(CurrentPath +"run.py");
+        syslog(LOG_WARNING,"[WARN] touei projection system is already started.."
     }
 
 
@@ -143,15 +195,47 @@ int  main(int argc, char *argv[])
 		  if (kill(rc,0)!=0)
 		  {
 		      //mplayer died :(
-		 //    printf("Oh noes mplayer died");
+		      printf("Oh noes mplayer died");
+		      syslog(LOG_WARNING,"[WARN] mplayer died");
 
+		      //restart mplayer
+		      system("mplayer -idle -slave -fs -fixed-vo -input file=" + ConfigValue);
+
+		      //Check if touei crashed as well
+		      rc=-1;
+		      rc=system("ps -C touei_run -opid=");
+		      if(kill(rc,0)!=0)
+		      {
+		          //touei died...probably jew code...
+		          printf("Oh noes touei died")
+		          syslog(LOG_WARNING,"[WARN] touei died");
+		          system(CurrentPath +"touei_run --recover");
+		          sleep(1);
+		      }
+		      else
+		      {
+		          //Notify touei that mplayer crashed
+		          kill(rc,25); //Send SIGCONT signal to toeui (19,18,25)
+		      }
 		  }
 		  rc=-1;
-		  rc=system("ps -C run.py -opid=");
+		  rc=system("ps -C touei_run -opid=");
 		  if(kill(rc,0)!=0)
 		  {
-		      //Python script died :(
-		   //   printf("Oh noes python script died :(");
+		      //touei died...probably jew code...
+		      printf("Oh noes python script died :(");
+		      syslog(LOG_WARNING,"[WARN] touei died");
+
+		      //Check if mplayer died before telling touei
+		      mpStart=("ps -C mplayer -opid=");
+		      if(kill(mpStart,0)!=0)
+              {
+                  printf("Oh noes mplayer died :(");
+                  syslog("[WARN] mplayer died");
+                  system("mplayer -idle -slave -fs -fixed-vo -input file=" + ConfigValue);
+              }
+              //recover touei
+              system(CurrentPath +"touei_run --recover");
 		  }
 		  sleep(10);
 	}
@@ -162,24 +246,13 @@ int  main(int argc, char *argv[])
 
 	exit(0);
 }
+
 //Gets the directory in which the application is running
 void GetExecutingPath(char* buffer)
 {
 	if(readlink("/proc/self/exe",buffer,PATH_MAX)==-1)
 		printf('Error reading symlink');
 
-}
-void launchtouei(void)
-{
-	//TODO:Launch touei
-	char CurrentPath[PATH_MAX + 1];
-	GetExecutingPath(*CurrentPath);
-}
-void launchmplayer(void)
-{
-	//TODO: Run touei in recovery mode
-     system("mplayer ~/G-Anime/mplayer-daemon/test.avi");
-     return;
 }
 
 
