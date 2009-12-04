@@ -30,6 +30,10 @@ import logging
 module_logger = logging.getLogger("touei.daemon")
 
 class ToueiDaemon():
+    """
+    This class provide a way to keep the video database in memory and
+    a fast way of checking witch video to play.
+    """
     def __init__(self, playlist, player, config, mkv):
         # Instanciate the logger
         self.logger = logging.getLogger("touei.daemon.ToueiDaemon")
@@ -56,7 +60,9 @@ class ToueiDaemon():
     def run(self):
         self.logger.debug("Entering run loop")
         curTime = self.getCurTime()
+        # This will containt a sq3.row instance
         CurrentVideo = {}
+        # For logging purposes
         loopCounter = 0
         while(self._isRunning):
             self.logger.info("Entering Loop %s" % (loopCounter,))
@@ -112,11 +118,14 @@ class ToueiDaemon():
         """
         if signal == 25:
             # we restore the current video
-            self.logger.warn("SIGCONT signal received, restoring video")
+            self.logger.warn("SIGCONT(25) signal received, restoring video")
+            # @TODO add the seek feature when mplayer crash in the middle of a video
+
             # Force play it
             self._Player.openFile(self._CurrentVideo)
         elif signal == 18:
             # We rebuild the playlist database
+            self.logger.warn("Signal 18 received, rebuilding video DB")
             self._Playlist.load(self._Config.get("video", "location"))
 
 

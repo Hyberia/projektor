@@ -81,25 +81,50 @@ if __name__ == "__main__":
     logger.addHandler(fh)
 
     # Do some sanity check before starting the system
+    # @TODO There is no check for permission
+    logger.info("Begin sanity check")
     # Check: video, location
     if not os.path.isdir(config.get('video', 'location')):
-        logger.warn("Can't open video location at %s" % (config.get('video', 'location'), ))
+        logger.critical("Can't open video location at %s" % (config.get('video', 'location'), ))
         exit(1)
     else:
         logger.debug("Video location %s is usable" % (config.get("video", "location"), ))
+
     # Check: video, intro
-    if not os.path.exists(config.get('video', 'intro')):
+    if not os.path.exists(config.get("video", "intro")):
         logger.critical("Can't open intro video at %s" % (config.get('video', 'intro'), ))
         exit(1)
     else:
         logger.debug("Intro video available at %s" % (config.get("video", "intro") , ))
+
     # Check: core, slave_socket
     if not os.path.exists(config.get("core", "slave_socket")):
         logger.warn("Can't open the slave socket at %s" % (config.get("core", "slave_socket"), ))
         # Create the socket
-        os.mkfifo(config.get("core", "slave_socket"))
+        try:
+            os.mkfifo(config.get("core", "slave_socket"))
+        except OSError:
+            logger.critical("Can't create socket file, dying")
+            exit(1)
     else:
         logger.debug("FIFO file exist at %s" % (config.get("core", "slave_socket") ,))
+
+    # Check for the temporary folder
+    if not os.path.isdir(config.get("video","tmp-location")):
+        logger.warn("Temporary location inexistant at %s" % (config.get("video", "tmp-location"), ))
+        # Try creating the folders
+        try:
+            os.mkdir(config.get("video", "tmp-location"))
+            os.mkdir(config.get("video", "tmp-location")+"/intro")
+            os.mkdir(config.get("video", "tmp-location")+"/ass")
+        except OSError:
+            logger.critical("Could not create all the folder")
+            exit(1)
+        finally:
+            logger.info("Folders structure created")
+
+    else:
+        logger.debug("Tempoary folder exist at %s" % (config.get("video", "tmp-location"), ))
 
     logger.info("Sanity check complete")
 
