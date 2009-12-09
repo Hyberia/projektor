@@ -83,8 +83,12 @@ int  main(int argc, char *argv[])
     int rc,mpStart;
     char * ConfigValue;
     char *CurrentPath,*ConfigPath;
+    char tmpCath[255];
+    char *tmpCat;
     FILE *fifo;
     register int i;
+
+    tmpCat = &tmpCath;
 
     ConfigPath=malloc(16);
     ConfigPath="/etc/touei.conf\0";
@@ -154,21 +158,27 @@ int  main(int argc, char *argv[])
     }
 
     //Check if mplayer fifo file exits
-    fifo =fopen(ConfigValue,"r")
+    fifo =fopen(ConfigValue,"r");
     if(!fifo)
     {
-        system("mkfifo " + ConfigValue);
+        tmpCat="mkfifo ";
+        strcat(tmpCat,ConfigValue);
+        system( tmpCat);
+        tmpCat[0]='\0';
     }
     else
     {
-        fclose(fifo)
+        fclose(fifo);
     }
 
     //Check if mplayer is already running
     mpStart = system("ps -C mplayer -opid=");
     if(kill(mpStart,0)!=0)
     {
-        system("mplayer -idle -slave -fs -fixed-vo -input file=" + ConfigValue);
+        tmpCat="mplayer -idle -slave -fs -fixed-vo -input file=";
+        strcat(tmpCat,ConfigValue);
+        system( tmpCat);
+        tmpCat[0]='\0';
     }
     else
     {
@@ -179,11 +189,14 @@ int  main(int argc, char *argv[])
     rc= system("ps -C touei_run -opid=");
     if(kill(rc,0)!=0)
     {
-        system(CurrentPath +"touei_run");
+        strcpy(tmpCat, CurrentPath);
+        strcat(tmpCat,"touei_run");
+        system( tmpCat);
+        tmpCat[0]='\0';
     }
     else
     {
-        syslog(LOG_WARNING,"[WARN] touei projection system is already started.."
+        syslog(LOG_WARNING,"[WARN] touei projection system is already started..");
     }
 
 
@@ -199,7 +212,10 @@ int  main(int argc, char *argv[])
 		      syslog(LOG_WARNING,"[WARN] mplayer died");
 
 		      //restart mplayer
-		      system("mplayer -idle -slave -fs -fixed-vo -input file=" + ConfigValue);
+		      tmpCat="mplayer -idle -slave -fs -fixed-vo -input file=";
+              strcat(tmpCat,ConfigValue);
+              system( tmpCat);
+              tmpCat[0]='\0';
 
 		      //Check if touei crashed as well
 		      rc=-1;
@@ -207,9 +223,12 @@ int  main(int argc, char *argv[])
 		      if(kill(rc,0)!=0)
 		      {
 		          //touei died...probably jew code...
-		          printf("Oh noes touei died")
+		          printf("Oh noes touei died");
 		          syslog(LOG_WARNING,"[WARN] touei died");
-		          system(CurrentPath +"touei_run");
+                  strcpy(tmpCat, CurrentPath);
+                  strcat(tmpCat,"touei_run");
+                  system( tmpCat);
+                  tmpCat[0]='\0';
 		          sleep(1);
 		      }
 		      else
@@ -231,12 +250,19 @@ int  main(int argc, char *argv[])
 		      if(kill(mpStart,0)!=0)
               {
                   printf("Oh noes mplayer died :(");
-                  syslog("[WARN] mplayer died");
-                  system("mplayer -idle -slave -fs -fixed-vo -input file=" + ConfigValue);
+                  syslog(LOG_WARNING,"[WARN] mplayer died");
+                  tmpCat="mplayer -idle -slave -fs -fixed-vo -input file=";
+                  strcat(tmpCat,ConfigValue);
+                  system( tmpCat);
+                  tmpCat[0]='\0';
                   sleep(1);
               }
               //recover touei
-              system(CurrentPath +"touei_run");
+              strcpy(tmpCat, CurrentPath);
+              strcat(tmpCat,"touei_run");
+              system( tmpCat);
+              tmpCat[0]='\0';
+
 		  }
 		  sleep(10);
 	}
