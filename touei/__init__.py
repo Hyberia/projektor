@@ -30,13 +30,13 @@ __version__ = "0.1"
 __revision__ = ""
 __contributors__= "Mathieu Charron, Martin Samson"
 
-__all__ = ["player", "playlist", "mkvutils"]
+__all__ = ["player", "playlist", "mkvutils", "daemon"]
 
 CONFIG_DEFAULT_VALUE={"pid": "/var/pid/touei.pid",
                       "slave_socket": "/tmp/touei_slave.fifo",
                       "deamon_log": "touei_deamon.log",
                       "main_log": "touei_main.log",
-                      "level": "30",
+                      "level": "20",
                       "seek_delay": "2",
                       "recovery_time": "70",
                       "block_duration": "60",

@@ -58,11 +58,20 @@ Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
 # third: The style (check in the header)
 # Last: the text itself
 ASS_EVENT = "Dialogue: 0,%s,%s,%s,,0000,0000,0000,,{\\fad(250,250)}%s\n"
-import subprocess,re
+import subprocess,re, os
+
+# Instanciate the logging
+import logging
+module_logger = logging.getLogger("touei.mkvutils")
+
 class MkvUtils():
 
-    def __init__(self):
-        pass
+    def __init__(self, config):
+        # Instanciate the logger
+        self.logger = logging.getLogger("touei.mkvutils.MkvUtils")
+        self.logger.info("Creating instance")
+
+        self._Config = config
 
     def mkvTime(self,fileName):
         """Return the time in second of the specified filename.
@@ -113,7 +122,7 @@ class MkvUtils():
         @param string presentation
         @return boolean True/False
         """
-        return os.path.exists("%s/intro/%s"% (debug_config_tmp, presentation))
+        return os.path.exists("%s/intro/%s"% (self._Config.get("video", "tmp-location"), presentation))
 
     def _already_assed(self, presentation):
         """Check if the ASS for a given presentation exist
@@ -122,7 +131,7 @@ class MkvUtils():
         """
         # Get the filename
         ass_filename = presentation[:len(presentation)-3]+"ass"
-        return os.path.exists("%s/ass/%s"% (debug_config_tmp, ass_filename))
+        return os.path.exists("%s/ass/%s"% (self._Config.get("video", "tmp-location"), ass_filename))
 
     def _gen_ass(self, presentation):
         """Generate the ASS file for a given presentation
@@ -133,7 +142,7 @@ class MkvUtils():
         assFilename = presentation[:len(presentation)-3]+"ass"
         dispText = presentation.split(".")[1].replace("_", " ").title()
         # Open the file
-        assFile = open("%s/ass/%s" % (debug_config_tmp, assFilename), 'w')
+        assFile = open("%s/ass/%s" % (self._Config.get("video", "tmp-location"), assFilename), 'w')
         # Write the header
         assFile.write(ASS_HEADER)
         # Create events
@@ -151,49 +160,54 @@ class MkvUtils():
         """
         # Get the filenames
         assFilename = presentation[:len(presentation)-3]+"ass"
-        assLocation = "%s/ass/%s" % (debug_config_tmp, assFilename)
-        intro_output = "%s/intro/%s" % (debug_config_tmp, presentation)
+        assLocation = "%s/ass/%s" % (self._Config.get("video", "tmp-location"), assFilename)
+        intro_output = "%s/intro/%s" % (self._Config.get("video", "tmp-location"), presentation)
         # Generate the MKV
-        muxingCmd = subprocess.call(["mkvmerge", "-o", intro_output, assLocation, debug_config_intro], \
+        muxingCmd = subprocess.call(["mkvmerge", "-o", intro_output, assLocation, self._Config.get("video", "intro")], \
                     shell=False, close_fds=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,)
-        return muxingCmd
+        if muxingCmd:
+            # Muxing fail
+            return ""
+        else:
+            return intro_output
 
     def generate_intro(self, presentation):
         """Primary function. Il will all the sanity check before
         creating the ASS and muxing it.
         @param integer btime The time block
         @param string presentation The raw string from the filename
-        @return boolean True if error, False if okay
+        @return string The path of the intro video
         """
+        intro_file = "%s/intro/%s" % (self._Config.get("video", "tmp-location"), presentation)
         # check if the file exist
         if self._already_assed(presentation):
-            print "ASS: Present"
+            self.logger.debug("ASS: Present")
             # Do we have a MKV?
             if self._already_muxed(presentation):
                 # We do... do nothing
-                print "MKV: Present"
-                return 0
+                self.logger.debug("MKV: Present")
+                return intro_file
             else:
                 # We'll take the already create ASS for the muxing
-                print "MKV: Generating..."
+                self.logger.debug("MKV: Generating...")
                 self._mux_mkv(presentation)
-                return 0
+                return intro_file
         else:
-            print "ASS: Missing"
+            self.logger.debug("ASS: Missing")
             # Do we have a intro MKV?
             if self._already_muxed(presentation):
                 # strange, no ass but there is a MKV for the intro.
                 # Won't do a thing
-                print "MKV: Present"
-                return 0
+                self.logger.debug("MKV: Present")
+                return intro_file
             else:
-                print "MKV: Missing"
+                self.logger.debug("MKV: Missing")
                 # We have to generate the whole intro file
-                print "ASS: Generating..."
+                self.logger.debug("ASS: Generating...")
                 self._gen_ass(presentation)
-                print "ASS: Generating..."
+                self.logger.debug("ASS: Generating...")
                 self._mux_mkv(presentation)
-                return 0
+                return intro_file
 
 
 # Debug
@@ -205,7 +219,7 @@ if __name__ == "__main__":
     debug_config_tmp = "/tmp/touei"
     debug_config_intro = "/home/elwillow/workspace/Touei/intro.mkv"
 
-    mkv = MkvUtils()
+    mkv = MkvUtils("a")
     #print mkv._gen_event(3,2,"Top","TESTING A EVENT LINE!")
     #print os.path.exists(debug_config_intro)
 

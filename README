@@ -74,14 +74,24 @@ First you need to rename your file according to a specific pattern:
 
 * The ".mkv" string for extension.
 
-If you want to play "Higurashi no Naku Koro ni" at 3h45 pm the filename
+If you want to play "Higurashi no Naku Koro ni" at 3h45 PM the filename
 will be:
 
 - 1545.Higurashi_no_Naku_Koro_ni.mkv
 
 ** File structure **
 
-@TODO: Fill this
+The file structure is simple, inside the folder in the LOCATION config
+entry you will need one folder for each day. If Sunday is the 3rd (of any
+month) simple create a folder name "04" and put your files (named accordinly)
+in that folder.
+If the location does not exist, the script will die.
+The script will also create the folder structure in the TMP-LOCATION.
+If you are not sure what is the structure delete the TMP-LOCATION folder
+and it will be recreated.
+
+Since the default is in the /tmp you should worry to much, it is wipe
+at each reboot. Just make sure there is enough space for the intro video.
 
 
 5) Configuration

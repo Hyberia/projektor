@@ -53,7 +53,7 @@ from touei import *
 if __name__ == "__main__":
     # Create the configParser instance
     config = ConfigParser.SafeConfigParser(touei.CONFIG_DEFAULT_VALUE)
-    print config
+    #print config
     # Check if the config file exists:
     if os.path.exists(CONFIG_FILE):
         print "Loading config"
@@ -61,25 +61,87 @@ if __name__ == "__main__":
     else: print "Cannot load config"
 
     # Create Logger
-    logging.basicConfig(filename=config.get('logs','main_log'), level=config.getint('logs', 'level'))
-    touei_logger = logging.getLogger("touei")
+    logger = logging.getLogger("touei")
+    logger.setLevel(config.getint('logs', 'debug_level'))
+
+    # Create file handler
+    fh = logging.FileHandler(config.get('logs','main_log'))
 
     # Create the console logging
-    # @TODO The console login is not working
-    console = logging.StreamHandler()
-    logging.getLogger('touei_logger').addHandler(console)
+    ch = logging.StreamHandler()
+
+    # Set formating
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    cformatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
+    ch.setFormatter(cformatter)
+    fh.setFormatter(formatter)
+
+    # Add the handler to logger
+    logger.addHandler(ch)
+    logger.addHandler(fh)
 
     # Do some sanity check before starting the system
+    # @TODO There is no check for permission
+    logger.info("Begin sanity check")
+    # Check: video, location
     if not os.path.isdir(config.get('video', 'location')):
-        touei_logger.warn("Can't open video location at %s" % (config.get('video', 'location'), ))
+        logger.critical("Can't open video location at %s" % (config.get('video', 'location'), ))
         exit(1)
-    if not os.path.exists(config.get('video', 'intro')):
-        touei_logger.critical("Can't open intro video at %s" % (config.get('video', 'intro'), ))
+    else:
+        logger.debug("Video location %s is usable" % (config.get("video", "location"), ))
+
+    # Check: video, intro
+    if not os.path.exists(config.get("video", "intro")):
+        logger.critical("Can't open intro video at %s" % (config.get('video', 'intro'), ))
         exit(1)
+    else:
+        logger.debug("Intro video available at %s" % (config.get("video", "intro") , ))
 
+    # Check: core, slave_socket
+    if not os.path.exists(config.get("core", "slave_socket")):
+        logger.warn("Can't open the slave socket at %s" % (config.get("core", "slave_socket"), ))
+        # Create the socket
+        try:
+            os.mkfifo(config.get("core", "slave_socket"))
+        except OSError:
+            logger.critical("Can't create socket file, dying")
+            exit(1)
+    else:
+        logger.debug("FIFO file exist at %s" % (config.get("core", "slave_socket") ,))
 
-    print touei
-    print player.__version__
+    # Check for the temporary folder
+    if not os.path.isdir(config.get("video","tmp-location")):
+        logger.warn("Temporary location inexistant at %s" % (config.get("video", "tmp-location"), ))
+        # Try creating the folders
+        try:
+            os.mkdir(config.get("video", "tmp-location"))
+            os.mkdir(config.get("video", "tmp-location")+"/intro")
+            os.mkdir(config.get("video", "tmp-location")+"/ass")
+        except OSError:
+            logger.critical("Could not create all the folder")
+            exit(1)
+        finally:
+            logger.info("Folders structure created")
 
-    #Check if it works
-    touei_logger.critical("Application run complete")
+    else:
+        logger.debug("Tempoary folder exist at %s" % (config.get("video", "tmp-location"), ))
+
+    logger.info("Sanity check complete")
+
+    # Create the mkvutils instance
+    mkv = mkvutils.MkvUtils(config)
+
+    # Create the Playlist instance
+    playlist = playlist.PlayList(mkv)
+    playlist.load(config.get("video", "location"))
+
+    # Create the player instance
+    player = player.PlayerInterface(config.get("core", "slave_socket"))
+
+    # Call the daemon
+    daemon = daemon.ToueiDaemon(playlist, player, config, mkv)
+    # Enter the loop
+    daemon.run()
+
+    # We're done
+    logger.info("Application run complete")
