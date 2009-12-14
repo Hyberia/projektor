@@ -138,10 +138,12 @@ class ToueiDaemon():
             self._Player.openFile(self._CurrentVideo)
             # @TODO Add the seek to restore the video where is was
 
-        elif signal == 25:
-            # We rebuild the playlist database
-            self.logger.warn("Signal 25 received, rebuilding video DB")
-            self._Playlist.load(self._Config.get("video", "location"))
+        # REMOVED, simply kill touei_run and toueid will restart it and generate
+        # The new stuff
+        #elif signal == 25:
+            ## We rebuild the playlist database
+            #self.logger.warn("Signal 25 received, rebuilding video DB")
+            #self._Playlist.load(self._Config.get("video", "location"))
 
 
 if __name__ == "__main__":
