@@ -85,7 +85,7 @@ int  main(int argc, char *argv[])
     char *CurrentPath,*ConfigPath;
     char tmpCath[255];
     char *tmpCat;
-    FILE *fifo;
+    char *Exec;
     register int i;
 
     tmpCat = &tmpCath;
@@ -102,7 +102,7 @@ int  main(int argc, char *argv[])
     }
     if(argc)
     {
-        for(i=0;i<argc;i++)
+        for(i=1;i<argc;i++)
         {
             if(strcmp(argv[i],"-c")==0 || strcmp(argv[i],"--config")==0)
             {
@@ -123,7 +123,7 @@ int  main(int argc, char *argv[])
                 printf("\ttoueid [Options..]\n\n");
                 printf("\tOptions:\n");
                 printf("\t  -c, --config FILE\tSpecify the path including file name for\n\t\t\t\tan alternate config file\n");
-                printf("\t  -h,--help\t\tDisplay this output");
+                printf("\t  -h,--help\t\tDisplay this output\n");
 
                 exit(0);
             }
@@ -142,26 +142,35 @@ int  main(int argc, char *argv[])
 
 
     GetExecutingPath(CurrentPath);
+    CurrentPath[strlen(CurrentPath)-6]='\0';
+//    CurrentPath[strlen(CurrentPath)]= '//';
 
-    CurrentPath[strlen(CurrentPath)]= '//';
-
-    CurrentPath = realloc(CurrentPath,strlen(CurrentPath));
+    CurrentPath = realloc(CurrentPath,strlen(CurrentPath)+1);
+    CurrentPath[strlen(CurrentPath)]='\0';
 
     ConfigValue = ReadConfParam(ConfigPath,"slave_socket");
+    ConfigValue[strlen(ConfigValue)]='\0';
+    printf("Read config");
 
     //ReadConfParam could not find configuration file
     if( strcmp(ConfigValue,"ERR404")==0)
     {
-        printf("Could not find the configuration(touei.conf) file");
+        printf("Could not find the configuration(touei.conf) file\n");
         syslog(LOG_ERR,"[ERR] Could not find the configuration file");
         exit(-1);
     }
 
     //Check if mplayer fifo file exits
-    fifo =fopen(ConfigValue,"r");
-    if(!fifo)
+    //fifo =fopen(ConfigValue,"r");
+    printf("Creating fifo");
+    strcpy(tmpCat,"mkfifo ");
+    strcat(tmpCat,ConfigValue);
+    system(tmpCat);
+    tmpCat[0]='\0';
+   /* if((fifo=fopen(ConfigValue,"r"))==NULL)
     {
-        tmpCat="mkfifo ";
+        strcpy(tmpCat,"mkfifo ");
+        //tmpCat="mkfifo ";
         strcat(tmpCat,ConfigValue);
         system( tmpCat);
         tmpCat[0]='\0';
@@ -169,15 +178,21 @@ int  main(int argc, char *argv[])
     else
     {
         fclose(fifo);
-    }
+    }*/
 
+    //Get PID
+    mpStart=GetPID("ps -C mplayer -opid=");
     //Check if mplayer is already running
-    mpStart = system("ps -C mplayer -opid=");
-    if(kill(mpStart,0)!=0)
+    //mpStart = system("ps -C mplayer -opid=");
+    if((kill(mpStart,0)!=0) || mpStart == -1)
     {
-        tmpCat="mplayer -idle -slave -fs -fixed-vo -input file=";
+        strcpy(tmpCat,"mplayer -idle -slave -fs -fixed-vo -input file=");
         strcat(tmpCat,ConfigValue);
-        system( tmpCat);
+        strcat(tmpCat, " &");
+        Exec = malloc(strlen(tmpCat)+1);
+        strcpy(Exec,tmpCat);
+        system(Exec);
+        free(Exec);
         tmpCat[0]='\0';
     }
     else
@@ -186,17 +201,17 @@ int  main(int argc, char *argv[])
     }
 
     //Check if toueid is already running
-    rc= system("ps -C touei_run -opid=");
-    if(kill(rc,0)!=0)
+    rc= GetPID("ps -C touei_run -opid=");
+    if((kill(rc,0)!=0) || rc==-1)
     {
         strcpy(tmpCat, CurrentPath);
-        strcat(tmpCat,"touei_run");
+        strcat(tmpCat,"touei_run &");
         system( tmpCat);
         tmpCat[0]='\0';
     }
     else
     {
-        syslog(LOG_WARNING,"[WARN] touei projection system is already started..");
+        syslog(LOG_WARNING,"[WARN] touei projection system is already started..\n");
     }
 
 
@@ -204,29 +219,33 @@ int  main(int argc, char *argv[])
 	while(1){
 		  /* mplayer check */
 		  rc=-1;
-		  rc=system("ps -C mplayer -opid=");
-		  if (kill(rc,0)!=0)
+		  rc=GetPID("ps -C mplayer -opid=");
+		  if ((kill(rc,0)!=0) || rc==-1)
 		  {
 		      //mplayer died :(
-		      printf("Oh noes mplayer died");
+		      printf("Oh noes mplayer died\n");
 		      syslog(LOG_WARNING,"[WARN] mplayer died");
 
 		      //restart mplayer
-		      tmpCat="mplayer -idle -slave -fs -fixed-vo -input file=";
+		      strcpy(tmpCat,"mplayer -idle -slave -fs -fixed-vo -input file=");
               strcat(tmpCat,ConfigValue);
-              system( tmpCat);
+              strcat(tmpCat, " &");
+              Exec = malloc(strlen(tmpCat)+1);
+              strcpy(Exec,tmpCat);
+              system(Exec);
+              free(Exec);
               tmpCat[0]='\0';
 
 		      //Check if touei crashed as well
 		      rc=-1;
-		      rc=system("ps -C touei_run -opid=");
-		      if(kill(rc,0)!=0)
+		      rc=GetPID("ps -C touei_run -opid=");
+		      if((kill(rc,0)!=0) || rc==-1)
 		      {
 		          //touei died...probably jew code...
-		          printf("Oh noes touei died");
+		          printf("Oh noes touei died\n");
 		          syslog(LOG_WARNING,"[WARN] touei died");
                   strcpy(tmpCat, CurrentPath);
-                  strcat(tmpCat,"touei_run");
+                  strcat(tmpCat,"touei_run &");
                   system( tmpCat);
                   tmpCat[0]='\0';
 		          sleep(1);
@@ -238,28 +257,32 @@ int  main(int argc, char *argv[])
 		      }
 		  }
 		  rc=-1;
-		  rc=system("ps -C touei_run -opid=");
-		  if(kill(rc,0)!=0)
+		  rc=GetPID("ps -C touei_run -opid=");
+		  if((kill(rc,0)!=0) || rc==-1)
 		  {
 		      //touei died...probably jew code...
-		      printf("Oh noes python script died :(");
+		      printf("Oh noes python script died :(\n");
 		      syslog(LOG_WARNING,"[WARN] touei died");
 
 		      //Check if mplayer died before telling touei
-		      mpStart=("ps -C mplayer -opid=");
-		      if(kill(mpStart,0)!=0)
+		      mpStart=GetPID("ps -C mplayer -opid=");
+		      if((kill(mpStart,0)!=0) || mpStart==-1)
               {
-                  printf("Oh noes mplayer died :(");
+                  printf("Oh noes mplayer died :(\n");
                   syslog(LOG_WARNING,"[WARN] mplayer died");
-                  tmpCat="mplayer -idle -slave -fs -fixed-vo -input file=";
+                  strcpy(tmpCat,"mplayer -idle -slave -fs -fixed-vo -input file=");
                   strcat(tmpCat,ConfigValue);
-                  system( tmpCat);
+                  strcat(tmpCat, " &");
+                  Exec = malloc(strlen(tmpCat)+1);
+                  strcpy(Exec,tmpCat);
+                  system(Exec);
+                  free(Exec);
                   tmpCat[0]='\0';
                   sleep(1);
               }
               //recover touei
               strcpy(tmpCat, CurrentPath);
-              strcat(tmpCat,"touei_run");
+              strcat(tmpCat,"touei_run &");
               system( tmpCat);
               tmpCat[0]='\0';
 
@@ -280,6 +303,29 @@ void GetExecutingPath(char* buffer)
 	if(readlink("/proc/self/exe",buffer,PATH_MAX)==-1)
 		printf('Error reading symlink');
 
+}
+
+int GetPID(char* command){
+    int iPID;
+    char PID[20];
+    FILE *fp;
+    //Get PID
+    fp=popen(command,"r");
+    if(fp==NULL)
+    {
+        printf("Failed to run pipe for PID");
+        syslog(LOG_WARNING,"[ERR] Could not pipe to obtain pid");
+        exit -1;
+    }
+
+    if(fgets(PID,sizeof(PID)-1,fp) != NULL)
+    {
+        iPID= atoi(&PID);
+    }
+    else{ iPID=-1;}
+    pclose(fp);
+
+    return iPID;
 }
 
 
