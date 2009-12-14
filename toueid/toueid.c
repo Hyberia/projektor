@@ -91,7 +91,8 @@ int  main(int argc, char *argv[])
     tmpCat = &tmpCath;
 
     ConfigPath=malloc(16);
-    ConfigPath="/etc/touei.conf\0";
+    strcpy(ConfigPath,"/etc/touei.conf\0");
+    //ConfigPath="/etc/touei.conf\0";
     CurrentPath = malloc(PATH_MAX);
 
 
@@ -188,7 +189,7 @@ int  main(int argc, char *argv[])
     {
         strcpy(tmpCat,"mplayer -idle -slave -fs -fixed-vo -input file=");
         strcat(tmpCat,ConfigValue);
-        strcat(tmpCat, " &");
+        strcat(tmpCat, " >> mplayer.out &");
         Exec = malloc(strlen(tmpCat)+1);
         strcpy(Exec,tmpCat);
         system(Exec);
@@ -205,7 +206,7 @@ int  main(int argc, char *argv[])
     if((kill(rc,0)!=0) || rc==-1)
     {
         strcpy(tmpCat, CurrentPath);
-        strcat(tmpCat,"touei_run &");
+        strcat(tmpCat,"touei_run  >> touei_run.out &");
         system( tmpCat);
         tmpCat[0]='\0';
     }
@@ -229,7 +230,7 @@ int  main(int argc, char *argv[])
 		      //restart mplayer
 		      strcpy(tmpCat,"mplayer -idle -slave -fs -fixed-vo -input file=");
               strcat(tmpCat,ConfigValue);
-              strcat(tmpCat, " &");
+              strcat(tmpCat, " >> mplayer.out &");
               Exec = malloc(strlen(tmpCat)+1);
               strcpy(Exec,tmpCat);
               system(Exec);
@@ -245,7 +246,7 @@ int  main(int argc, char *argv[])
 		          printf("Oh noes touei died\n");
 		          syslog(LOG_WARNING,"[WARN] touei died");
                   strcpy(tmpCat, CurrentPath);
-                  strcat(tmpCat,"touei_run &");
+                  strcat(tmpCat,"touei_run >> touei_run.out &");
                   system( tmpCat);
                   tmpCat[0]='\0';
 		          sleep(1);
@@ -253,7 +254,7 @@ int  main(int argc, char *argv[])
 		      else
 		      {
 		          //Notify touei that mplayer crashed
-		          kill(rc,25); //Send SIGCONT signal to toeui (19,18,25)
+		          kill(rc,SIGCONT); //Send SIGCONT signal to toeui (19,18,25)
 		      }
 		  }
 		  rc=-1;
@@ -272,7 +273,7 @@ int  main(int argc, char *argv[])
                   syslog(LOG_WARNING,"[WARN] mplayer died");
                   strcpy(tmpCat,"mplayer -idle -slave -fs -fixed-vo -input file=");
                   strcat(tmpCat,ConfigValue);
-                  strcat(tmpCat, " &");
+                  strcat(tmpCat, " >> mplayer.out &");
                   Exec = malloc(strlen(tmpCat)+1);
                   strcpy(Exec,tmpCat);
                   system(Exec);
@@ -282,7 +283,7 @@ int  main(int argc, char *argv[])
               }
               //recover touei
               strcpy(tmpCat, CurrentPath);
-              strcat(tmpCat,"touei_run &");
+              strcat(tmpCat,"touei_run >> touei_run.out &");
               system( tmpCat);
               tmpCat[0]='\0';
 
