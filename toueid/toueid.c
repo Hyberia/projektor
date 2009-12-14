@@ -189,7 +189,7 @@ int  main(int argc, char *argv[])
     {
         strcpy(tmpCat,"mplayer -idle -slave -quiet -fs -fixed-vo -input file=");
         strcat(tmpCat,ConfigValue);
-        strcat(tmpCat, " >> mplayer.out &");
+        strcat(tmpCat, " 1>> mplayer.out 2>>mplayer.out &");
         Exec = malloc(strlen(tmpCat)+1);
         strcpy(Exec,tmpCat);
         system(Exec);
@@ -230,7 +230,7 @@ int  main(int argc, char *argv[])
 		      //restart mplayer
 		      strcpy(tmpCat,"mplayer -idle -slave -quiet -fs -fixed-vo -input file=");
               strcat(tmpCat,ConfigValue);
-              strcat(tmpCat, " >> mplayer.out &");
+              strcat(tmpCat, " 1>> mplayer.out 2>>mplayer.out &");
               Exec = malloc(strlen(tmpCat)+1);
               strcpy(Exec,tmpCat);
               system(Exec);
@@ -273,7 +273,7 @@ int  main(int argc, char *argv[])
                   syslog(LOG_WARNING,"[WARN] mplayer died");
                   strcpy(tmpCat,"mplayer -idle -slave -quiet -fs -fixed-vo -input file=");
                   strcat(tmpCat,ConfigValue);
-                  strcat(tmpCat, " >> mplayer.out &");
+                  strcat(tmpCat, " 1>> mplayer.out 2>>mplayer.out &");
                   Exec = malloc(strlen(tmpCat)+1);
                   strcpy(Exec,tmpCat);
                   system(Exec);
