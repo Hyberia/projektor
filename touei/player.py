@@ -58,11 +58,9 @@ class PlayerInterface():
         self.socketLocation = socketLocation
         self.socket = None
 
-        #Will lock until mplayer is listening.
-        try:
-           self.socket = os.open(socketLocation, os.O_WRONLY)
-        except Exception,e:
-            raise e
+
+        # open socket
+        self.openSocket()
 
         self._commands = {}
         self._commands['open_file'] = "loadfile %s %d\n"
@@ -76,12 +74,31 @@ class PlayerInterface():
         if not self.socket:
             return False
 
+        # Close the socket
+        self.closeSocket()
+
+    def closeSocket(self):
+        """
+        Close the socket. Don't use it lightly.
+        """
+        self.logger.info("Closing socket")
         try:
             os.close(self.socket)
         except Exception,e:
             print e
             return False
         return True
+
+    def openSocket(self):
+        """
+        Open the socket. Don't use it lightly.
+        """
+        # Will lock until mplayer is listening.
+        self.logger.info("Opening socket")
+        try:
+           self.socket = os.open(self.socketLocation, os.O_WRONLY)
+        except Exception,e:
+            raise e
 
     def _communicate(self,command):
         """Communicate with mplayer thru the socket. Does some basic command verifications

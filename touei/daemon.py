@@ -18,9 +18,16 @@
 # DISCLAIMED. IN NO EVENT SHALL THE AUTHORS BE LIABLE TO ANY PARTY FOR
 # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
+"""
+this is the deamon module part of the Touei project.
+please see http://elwillow.net/touei for more info.
+"""
 
-__author__ ="GAnime"
-__contributors__ = "Martin Samson <pyrolian@gmail.com>"
+__author__ = "G-Anime"
+__license__ = "Eiffel Version 2"
+__version__ = "0.1"
+__revision__ = ""
+__contributors__= "Mathieu Charron, Martin Samson"
 
 import time, signal, datetime, os
 import mkvutils
@@ -79,7 +86,8 @@ class ToueiDaemon():
                     # Play the standby video
                     self.logger.info("Playing standby video")
                     self._CurrentVideo = self._Config.get("video","standby")
-                    self._Player.openFile(self._CurrentVideo)
+                    # Open the file is "soft" mode, aka append.
+                    self._Player.openFile(self._CurrentVideo, True)
 
             elif self._CurrentVideo != video['file']:
                 # We have a new video to play (apparently)
@@ -116,16 +124,23 @@ class ToueiDaemon():
         Signal from the TOUEID process telling the loop that mplayer have
         been restart. replaying the current video.
         """
-        if signal == 25:
+        self.logger.debug("Received signal %s" % (signal, ))
+        if signal == 18:
             # we restore the current video
-            self.logger.warn("SIGCONT(25) signal received, restoring video")
-            # @TODO add the seek feature when mplayer crash in the middle of a video
+            self.logger.warn("SIGCONT signal received, restoring video")
+            # @TODO Add the seek feature when mplayer crash in the middle of a video
+
+            # Close the socket et reopen it
+            self._Player.closeSocket()
+            self._Player.openSocket()
 
             # Force play it
             self._Player.openFile(self._CurrentVideo)
-        elif signal == 18:
+            # @TODO Add the seek to restore the video where is was
+
+        elif signal == 25:
             # We rebuild the playlist database
-            self.logger.warn("Signal 18 received, rebuilding video DB")
+            self.logger.warn("Signal 25 received, rebuilding video DB")
             self._Playlist.load(self._Config.get("video", "location"))
 
 
