@@ -57,6 +57,9 @@ class ToueiDaemon():
         self._CurrentVideo = self._Config.get("video","recovery")
 
     def stop(self):
+        """
+        Stop the loop
+        """
         self.logger.debug("stop() called")
         self._isRunning = False
 
@@ -74,18 +77,33 @@ class ToueiDaemon():
             open(self._Config.get("core","tmp-location")+"/player_running", "w").close()
 
     def getCurTime(self):
-        self.logger.debug("getCurTime() called. Time is: " + datetime.datetime.now().strftime("%H%M"))
+        """
+        Return the current time with the block format.
+        """
         return datetime.datetime.now().strftime("%H%M")
 
+    def secondsDelta(self, blockStart):
+        """
+        Return the number of seconds since the begining of the current block
+        @param string blockStart
+        """
+        delta = datetime.datetime.now() - datetime.datetime.strptime(str(blockStart),"%Y%m%d%H%M")
+        print delta
+        self.logger.debug("BLOCK DELTA IS %d SECONDS" % (delta.seconds, ) )
+        return delta.seconds
+
     def run(self):
+        """
+        Main daemon routine
+        """
         self.logger.debug("Entering run loop")
-        curTime = self.getCurTime()
+        self.logger.debug("Loop sleep time is %d seconds" % (self._Config.getint("timing","loop_sleep"), ) )
         # This will containt a sq3.row instance
         CurrentVideo = {}
         # For logging purposes
-        loopCounter = 0
         while(self._isRunning):
-            self.logger.info("Entering Loop %s" % (loopCounter,))
+            self.logger.info("Entering Loop at %s" % (datetime.datetime.now().strftime("%H%M.%S"),))
+            curTime = self.getCurTime()
             video = self._Playlist.get()
             self.logger.debug("Current Video: " + self._CurrentVideo)
             #self.logger.debug("Playlist Video: " + video['file'])
@@ -115,10 +133,28 @@ class ToueiDaemon():
                 if not self.playerRunning():
                     # Not running, we have to restore the video
                     self.logger.warn("Restoring: Player was dead, restoring")
-                    # Send the intro to player
-                    self._Player.openFile(introVideo)
+                    bDelta = self.secondsDelta(video['datetime_start'])
+                    # Check if we want the intro video
+                    if bDelta < self._Config.getint("timing", "loop_sleep"):
+                        # Within the sleep timer
+                        self.logger.info("Restoring: Within the loop_sleep time, Playing block")
+                        self._Player.openFile(introVideo)
+
                     # Send the video to player
                     self._Player.openFile(self._CurrentVideo, True)
+
+                    # Check if we need to seek
+                    if bDelta > self._Config.getint("timing","recovery_time")*2:
+                        # We need to seek
+                        self.logger.info("Restoring: Over the twice recovery time, seeking")
+                        # Send the seek commands
+                        self._Player.seek(True, bDelta)
+                    else:
+                        # We are within the recovery time, don't seek
+                        self.logger.info("Restoring: Wihin the recovery, doing nothing")
+                    # Send the intro to player
+
+
                     # Send the outro to player
                     #self._Player.openFile(self._Config.get("video","outro"))
                     # Recreate the file
@@ -132,8 +168,7 @@ class ToueiDaemon():
                 # It could also mean we just went through a _signalCont()
                 self.logger.debug("Still playing, sleeping")
             self.logger.debug("Loop ending")
-            loopCounter = loopCounter + 1
-            time.sleep(10)
+            time.sleep(self._Config.getint("timing", "loop_sleep") )
 
     def _signalTerm(self,signal,frame):
         """
@@ -162,6 +197,15 @@ class ToueiDaemon():
             # Force play it
             self._Player.openFile(self._CurrentVideo)
             # @TODO Add the seek to restore the video where is was
+
+            if bDelta > self._Config.getint("timing","recovery_time")*2:
+                # We need to seek
+                self.logger.info("Restoring: Over the twice recovery time, seeking")
+                # Send the seek commands
+                self._Player.seek(True, bDelta)
+            else:
+                # We are within the recovery time, don't seek
+                self.logger.info("Restoring: Wihin the recovery, doing nothing")
 
         # REMOVED, simply kill touei_run and toueid will restart it and generate
         # The new stuff

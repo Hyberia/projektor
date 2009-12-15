@@ -177,15 +177,15 @@ class PlayerInterface():
     def seek(self, forward, seekTime):
         """
         @param boolean forward Going forward(True) or backward(False)
-        @param integer seekTime Seek by how many minutes
+        @param integer seekTime Seek by how many seconds
         @return boolean True/False
         """
         if forward:
             direction = "+"
         else:
             direction = "-"
-
-        command = self._commands['seek'] % (direction, seekTime * 60)
+        self.logger.debug("Seeking %s %d seconds" % (direction, seekTime))
+        command = self._commands['seek'] % (direction, seekTime)
 
         return self._execute(command)
 
