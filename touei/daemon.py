@@ -70,7 +70,7 @@ class ToueiDaemon():
         """
         Create the file for toueid and the player state (if we crash)
         """
-        if not playerRunning():
+        if not self.playerRunning():
             open(self._Config.get("core","tmp-location")+"/player_running", "w").close()
 
     def getCurTime(self):
@@ -104,17 +104,17 @@ class ToueiDaemon():
 
             elif self._CurrentVideo != video['file']:
                 # We have a new video to play (apparently)
-                self.logger.debug("Current video is different")
+                self.logger.debug("Restoring: Current video is different")
                 currentVideo = video
                 self._CurrentVideo = video['file']
                 # Create the intro file
                 introVideo = self._MkvUtils.generate_intro(os.path.split(video['file'])[1])
-                self.logger.debug("Intro video is " + introVideo)
+                self.logger.debug("Restoring: Intro video is " + introVideo)
 
                 # Check if the video is alive
                 if not self.playerRunning():
                     # Not running, we have to restore the video
-                    self.logger.warn("Player was dead, restoring")
+                    self.logger.warn("Restoring: Player was dead, restoring")
                     # Send the intro to player
                     self._Player.openFile(introVideo)
                     # Send the video to player
@@ -125,7 +125,7 @@ class ToueiDaemon():
                     self.setPlayerRunning()
                 else:
                     # Player is still alive, do nothing
-                    self.logger.warn("Player is still alive, sleeping")
+                    self.logger.warn("Restoring: Player is still alive, sleeping")
 
             else:
                 # Nothing to do, video is playing
