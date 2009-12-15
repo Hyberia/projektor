@@ -60,6 +60,19 @@ class ToueiDaemon():
         self.logger.debug("stop() called")
         self._isRunning = False
 
+    def playerRunning(self):
+        """
+        Will check for the player state file deleted by toueid.
+        """
+        return os.path.exists(self._Config.get("core","tmp-location")+"/player_running")
+
+    def setPlayerRunning(self):
+        """
+        Create the file for toueid and the player state (if we crash)
+        """
+        if not os.path.exists('file'):
+            open(self._Config.get("core","tmp-location")+"/player_running", "w").close()
+
     def getCurTime(self):
         self.logger.debug("getCurTime() called. Time is: " + datetime.datetime.now().strftime("%H%M"))
         return datetime.datetime.now().strftime("%H%M")
@@ -98,12 +111,22 @@ class ToueiDaemon():
                 introVideo = self._MkvUtils.generate_intro(os.path.split(video['file'])[1])
                 self.logger.debug("Intro video is " + introVideo)
 
-                # Send the intro to player
-                self._Player.openFile(introVideo)
-                # Send the video to player
-                self._Player.openFile(self._CurrentVideo, True)
-                # Send the outro to player
-                #self._Player.openFile(self._Config.get("video","outro"))
+                # Check if the video is alive
+                if not self.playerRunning():
+                    # Not running, we have to restore the video
+                    self.logger.warn("Player was dead, restoring")
+                    # Send the intro to player
+                    self._Player.openFile(introVideo)
+                    # Send the video to player
+                    self._Player.openFile(self._CurrentVideo, True)
+                    # Send the outro to player
+                    #self._Player.openFile(self._Config.get("video","outro"))
+                    # Recreate the file
+                    self.setPlayerRunning()
+                else:
+                    # Player is still alive, do nothing
+                    self.logger.warn("Player is still alive, sleeping")
+
             else:
                 # Nothing to do, video is playing
                 # It could also mean we just went through a _signalCont()
