@@ -70,7 +70,7 @@ class ToueiDaemon():
         """
         Create the file for toueid and the player state (if we crash)
         """
-        if not os.path.exists('file'):
+        if not playerRunning():
             open(self._Config.get("core","tmp-location")+"/player_running", "w").close()
 
     def getCurTime(self):
@@ -141,6 +141,8 @@ class ToueiDaemon():
         """
         self.logger.warn("SIGNTERM signal received, quitting")
         self._isRunning = False
+        if self.playerRunning():
+            os.remove(self._Config.get("core","tmp-location")+"/player_running")
 
     def _signalCont(self, signal, frame):
         """
