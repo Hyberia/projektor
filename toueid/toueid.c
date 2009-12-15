@@ -33,28 +33,34 @@
   Params: sig : The signal(int) received
  *********************************************************************/
 void signal_handler(int sig) {
-
+    int rc;
 
     //signal(SIGABRT, signal_handler);
     //signal(SIGHUP, signal_handler);
     //signal(SIGTERM, signal_handler);
     //signal(SIGINT, signal_handler);
    // signal(SIGQUIT, signal_handler);
-    switch(sig) {
 
+    rc=GetPID("ps -C touei_run -opid=");
+    switch(sig) {
         case SIGABRT:
             syslog(LOG_WARNING, "Received SIGABRT signal.");
             exit(0);
             break;
         case SIGQUIT:
+            kill(rc,SIGQUIT);
             syslog(LOG_WARNING, "Received SIGQUIT signal.");
             exit(0);
             break;
         case SIGHUP:
+            kill(rc,SIGHUP);
             syslog(LOG_WARNING, "Received SIGHUP signal.");
             exit(0);
             break;
         case SIGTERM:
+            kill(rc,SIGTERM);
+            kill(rc,SIGTERM);
+            sleep(1);
             syslog(LOG_WARNING, "Received SIGTERM signal.");
             exit(0);
             break;
@@ -85,6 +91,7 @@ int  main(int argc, char *argv[])
     char *CurrentPath,*ConfigPath;
     char tmpCath[255];
     char *tmpCat;
+    FILE *fp;
     char *Exec;
     register int i;
 
@@ -139,7 +146,7 @@ int  main(int argc, char *argv[])
 #endif
     syslog(LOG_INFO, "[INFO] %s daemon starting up",DAEMON_NAME);
 
-
+    remove("/tmp/touei/player_running");
 
 
     GetExecutingPath(CurrentPath);
@@ -237,6 +244,8 @@ int  main(int argc, char *argv[])
               free(Exec);
               tmpCat[0]='\0';
 
+              remove("/tmp/touei/player_running");
+
 		      //Check if touei crashed as well
 		      rc=-1;
 		      rc=GetPID("ps -C touei_run -opid=");
@@ -279,6 +288,7 @@ int  main(int argc, char *argv[])
                   system(Exec);
                   free(Exec);
                   tmpCat[0]='\0';
+                  remove("/tmp/touei/player_running");
                   sleep(1);
               }
               //recover touei
