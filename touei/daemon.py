@@ -104,10 +104,10 @@ class ToueiDaemon():
         while(self._isRunning):
             self.logger.info("Entering Loop at %s" % (datetime.datetime.now().strftime("%H%M.%S"),))
             curTime = self.getCurTime()
-            video = self._Playlist.get()
+            self.video = self._Playlist.get()
             self.logger.debug("Current Video: " + self._CurrentVideo)
             #self.logger.debug("Playlist Video: " + video['file'])
-            if not video:
+            if not self.video:
                 # Nothing for current time, Play standby video
                 self.logger.debug("No video for current block")
                 if self._CurrentVideo == self._Config.get("video","standby"):
@@ -120,24 +120,24 @@ class ToueiDaemon():
                     # Open the file is "soft" mode, aka append.
                     self._Player.openFile(self._CurrentVideo, True)
 
-            elif self._CurrentVideo != video['file']:
+            elif self._CurrentVideo != self.video['file']:
                 # We have a new video to play (apparently)
-                self.logger.debug("Restoring: Current video is different")
-                currentVideo = video
-                self._CurrentVideo = video['file']
+                self.logger.debug("Current video is different")
+                currentVideo = self.video
+                self._CurrentVideo = self.video['file']
                 # Create the intro file
-                introVideo = self._MkvUtils.generate_intro(os.path.split(video['file'])[1])
+                introVideo = self._MkvUtils.generate_intro(os.path.split(self.video['file'])[1])
                 self.logger.debug("Restoring: Intro video is " + introVideo)
 
                 # Check if the video is alive
                 if not self.playerRunning():
                     # Not running, we have to restore the video
-                    self.logger.warn("Restoring: Player was dead, restoring")
-                    bDelta = self.secondsDelta(video['datetime_start'])
+                    self.logger.warn("Player was dead, restoring")
+                    bDelta = self.secondsDelta(self.video['datetime_start'])
                     # Check if we want the intro video
                     if bDelta < self._Config.getint("timing", "loop_sleep"):
                         # Within the sleep timer
-                        self.logger.info("Restoring: Within the loop_sleep time, Playing block")
+                        self.logger.info("Within the loop_sleep time, Playing block")
                         self._Player.openFile(introVideo)
 
                     # Send the video to player
@@ -146,7 +146,7 @@ class ToueiDaemon():
                     # Check if we need to seek
                     if bDelta > self._Config.getint("timing","recovery_time")*2:
                         # We need to seek
-                        self.logger.info("Restoring: Over the twice recovery time, seeking")
+                        self.logger.info("Over the twice recovery time, seeking")
                         # Send the seek commands
                         self._Player.seek(True, bDelta)
                     else:
@@ -161,7 +161,7 @@ class ToueiDaemon():
                     self.setPlayerRunning()
                 else:
                     # Player is still alive, do nothing
-                    self.logger.warn("Restoring: Player is still alive, sleeping")
+                    self.logger.warn("Player is still alive, sleeping")
 
             else:
                 # Nothing to do, video is playing
@@ -198,6 +198,8 @@ class ToueiDaemon():
             self._Player.openFile(self._CurrentVideo)
             # @TODO Add the seek to restore the video where is was
 
+            # Get the delta
+            bDelta = self.secondsDelta(self.video['datetime_start'])
             if bDelta > self._Config.getint("timing","recovery_time")*2:
                 # We need to seek
                 self.logger.info("Restoring: Over the twice recovery time, seeking")

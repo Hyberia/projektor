@@ -184,10 +184,14 @@ class PlayerInterface():
             direction = "+"
         else:
             direction = "-"
-        self.logger.debug("Seeking %s %d seconds" % (direction, seekTime))
-        command = self._commands['seek'] % (direction, seekTime)
+        if seekTime > 1:
+            self.logger.debug("Seeking %s %d seconds" % (direction, seekTime))
+            command = self._commands['seek'] % (direction, seekTime)
+            return self._execute(command)
+        else:
+            self.logger.debug("Seek time was less than 1 (%d)" % (seekTime, ))
+            return True
 
-        return self._execute(command)
 
 if __name__ == "__main__":
     print "##### DEBUG ######"
