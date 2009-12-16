@@ -25,6 +25,12 @@
 #define DAEMON_NAME "toueid"
 #define PID_FILE "/var/run/toueid.pid"
 
+
+int GetPID(char* command);
+void GetExecutingPath(char* buffer);
+void signal_handler(int sig);
+
+
 /***********************************************************
   Function: signal_handler
   Description: Handles signals the daemon might receive.
@@ -58,9 +64,7 @@ void signal_handler(int sig) {
             exit(0);
             break;
         case SIGTERM:
-            kill(rc,SIGTERM);
-            kill(rc,SIGTERM);
-            sleep(1);
+			system("kill -SIGTERM `pgrep touei_run`");
             syslog(LOG_WARNING, "Received SIGTERM signal.");
             exit(0);
             break;
@@ -69,7 +73,7 @@ void signal_handler(int sig) {
             exit(0);
             break;
         default:
-            syslog(LOG_WARNING, "Unhandled signal (%d) %s", strsignal(sig));
+            syslog(LOG_WARNING, "Unhandled signal (%d) %s", sig,strsignal(sig));
             exit(-1);
             break;
     }
@@ -91,7 +95,6 @@ int  main(int argc, char *argv[])
     char *CurrentPath,*ConfigPath;
     char tmpCath[255];
     char *tmpCat;
-    FILE *fp;
     char *Exec;
     register int i;
 
@@ -312,7 +315,7 @@ int  main(int argc, char *argv[])
 void GetExecutingPath(char* buffer)
 {
 	if(readlink("/proc/self/exe",buffer,PATH_MAX)==-1)
-		printf('Error reading symlink');
+		printf("Error reading symlink");
 
 }
 
@@ -326,7 +329,7 @@ int GetPID(char* command){
     {
         printf("Failed to run pipe for PID");
         syslog(LOG_WARNING,"[ERR] Could not pipe to obtain pid");
-        exit -1;
+        exit(-1);
     }
 
     if(fgets(PID,sizeof(PID)-1,fp) != NULL)
