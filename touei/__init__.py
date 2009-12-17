@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Eiffel Forum License, version 2
 #
@@ -27,15 +27,15 @@ Anime Convention
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
-__revision__ = "36"
+__revision__ = "39"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 __all__ = ["player", "playlist", "mkvutils", "daemon"]
 
 CONFIG_DEFAULT_VALUE={"pid": "/var/pid/touei.pid",
                       "slave_socket": "/tmp/touei_slave.fifo",
-                      "deamon_log": "touei_deamon.log",
-                      "main_log": "touei_main.log",
+                      "deamon_log": "/tmp/touei_deamon.log",
+                      "main_log": "/tmp/touei_main.log",
                       "debug_level": "20",
                       "seek_delay": "2",
                       "recovery_time": "70",

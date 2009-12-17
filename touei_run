@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Eiffel Forum License, version 2
 #
@@ -26,7 +26,7 @@ Main script for the Touei project. Need the Touei modules.
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
-__revision__ = "36"
+__revision__ = "39"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 # Set this to your configuration file.
@@ -84,6 +84,7 @@ if __name__ == "__main__":
 
     # Do some sanity check before starting the system
     # @TODO There is no check for permission
+    logger.info("======= NEW INSTANCE =======")
     logger.info("Begin sanity check")
     # Check: video, location
     if not os.path.isdir(config.get('video', 'location')):

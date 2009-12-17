@@ -56,6 +56,8 @@ DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 @TODO: Missing how to configure xorg and initrc
 @TODO: add source for software
 
+There is NO check if those program are installed. You should make sure they are.
+
 4) Prerequisites
 ----------------
 
@@ -99,26 +101,15 @@ at each reboot. Just make sure there is enough space for the intro videos.
 
 Until there is a better way to install this setup, follow these instructions:
 
-- Build and install the toueid daemon:
-  cd touei/readconfig
-  make                      # build libReadConfig.so
-  sudo make install         # Install it (to /usr/local/lib)
-  cd ../toueid
-  make                      # Build toueid
-  sudo make install         # Install it (to /usr/local/bin)
-  cd ..
-
-- Copy the folder touei to your sites-packages. normally something like
-  /usr/local/lib/python2.6/site-packages/
-
-- Copy the sample configuration file to /etc/touei.conf
-  Change the config
-
-- copy touei_run to /usr/local/bin and allow execution (chmod +x)
+- Execute:
+    ./run_me.sh install
+  It will build and install toueid and readconfig then execute setup.py.
+  The first argument will be pass on.
 
 - Now run toueid and check if there is any error in the logs
   Just hit ctrl+c when you're done (toueid will send SIGTERM to mplayer and
-  touei_run
+  touei_run. touei_run does not output anything to the console. You should
+  run a `tail -f` in the log file (default is /tmp/touei_main.log)
 
 - Set whatever script you will use to monitor the status of toueid
   (The inittab is a good location).
@@ -137,7 +128,12 @@ Please see the touei.conf.sample for the configuration instruction.
 
 The default location is /etc/touei.conf. You can set a different path
 in the touei_run file (located in /usr/local/bin) but it will break the
-daemon.
+daemon. touei_run can also be run manually if you also start mplayer manually.
+
+Log file are located in /tmp by default. Be aware that they are deleted at
+reboot. You should change that behavior. I wanted to place them in /var
+but a regular user doesn't have write access.
+
 
 7) Reference
 -----------
