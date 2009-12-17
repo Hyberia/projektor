@@ -93,9 +93,10 @@ int  main(int argc, char *argv[])
     int rc,mpStart;
     char * ConfigValue;
     char *CurrentPath,*ConfigPath;
-    char tmpCath[255];
+    char tmpCath[450];
     char *tmpCat;
     char *Exec;
+	char *ToueiOut;
     register int i;
 
     tmpCat = &tmpCath;
@@ -161,10 +162,14 @@ int  main(int argc, char *argv[])
 
     ConfigValue = ReadConfParam(ConfigPath,"slave_socket");
     ConfigValue[strlen(ConfigValue)]='\0';
-    printf("Read config");
+    printf("[INFO] Read config\n");
+
+	ToueiOut = ReadConfParam(ConfigPath,"main_log");
+	ToueiOut[strlen(ConfigValue)]='\0';
+	printf("[INFO] Main log\n");
 
     //ReadConfParam could not find configuration file
-    if( strcmp(ConfigValue,"ERR404")==0)
+    if(strcmp(ConfigValue,"ERR404")==0)
     {
         printf("Could not find the configuration(touei.conf) file\n");
         syslog(LOG_ERR,"[ERR] Could not find the configuration file");
@@ -173,7 +178,7 @@ int  main(int argc, char *argv[])
 
     //Check if mplayer fifo file exits
     //fifo =fopen(ConfigValue,"r");
-    printf("Creating fifo");
+    printf("[INFO] Creating fifo\n");
     strcpy(tmpCat,"mkfifo ");
     strcat(tmpCat,ConfigValue);
     system(tmpCat);
@@ -216,8 +221,10 @@ int  main(int argc, char *argv[])
     if((kill(rc,0)!=0) || rc==-1)
     {
         strcpy(tmpCat, CurrentPath);
-        strcat(tmpCat,"touei_run  >> touei_run.out &");
-        system( tmpCat);
+        strcat(tmpCat,"touei_run  1>> touei_run.out 2>>");
+		strcat(tmpCat, ToueiOut);
+		strcat(tmpCat," &");
+        system(tmpCat);
         tmpCat[0]='\0';
     }
     else
@@ -255,11 +262,14 @@ int  main(int argc, char *argv[])
 		      if((kill(rc,0)!=0) || rc==-1)
 		      {
 		          //touei died...probably jew code...
-		          printf("Oh noes touei died\n");
+		          printf("[WARN] Oh noes touei died\n");
 		          syslog(LOG_WARNING,"[WARN] touei died");
-                  strcpy(tmpCat, CurrentPath);
-                  strcat(tmpCat,"touei_run >> touei_run.out &");
-                  system( tmpCat);
+
+				  strcpy(tmpCat, CurrentPath);
+		          strcat(tmpCat,"touei_run  1>> touei_run.out 2>>");
+				  strcat(tmpCat, ToueiOut);
+				  strcat(tmpCat," &");
+
                   tmpCat[0]='\0';
 		          sleep(1);
 		      }
@@ -274,14 +284,14 @@ int  main(int argc, char *argv[])
 		  if((kill(rc,0)!=0) || rc==-1)
 		  {
 		      //touei died...probably jew code...
-		      printf("Oh noes python script died :(\n");
+		      printf("[WARN] Oh noes python script died :(\n");
 		      syslog(LOG_WARNING,"[WARN] touei died");
 
 		      //Check if mplayer died before telling touei
 		      mpStart=GetPID("ps -C mplayer -opid=");
 		      if((kill(mpStart,0)!=0) || mpStart==-1)
               {
-                  printf("Oh noes mplayer died :(\n");
+                  printf("[WARN] Oh noes mplayer died :(\n");
                   syslog(LOG_WARNING,"[WARN] mplayer died");
                   strcpy(tmpCat,"mplayer -idle -slave -quiet -fs -fixed-vo -input file=");
                   strcat(tmpCat,ConfigValue);
@@ -296,8 +306,9 @@ int  main(int argc, char *argv[])
               }
               //recover touei
               strcpy(tmpCat, CurrentPath);
-              strcat(tmpCat,"touei_run >> touei_run.out &");
-              system( tmpCat);
+        	  strcat(tmpCat,"touei_run  1>> touei_run.out 2>>");
+			  strcat(tmpCat, ToueiOut);
+			  strcat(tmpCat," &");
               tmpCat[0]='\0';
 
 		  }
