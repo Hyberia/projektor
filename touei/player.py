@@ -40,10 +40,12 @@ class CommandEmptyException(Exception): pass
 class CommandMalformedException(Exception): pass
 
 class PlayerInterface():
-    """Abstraction class to Mplayer"""
+    """Abstraction class to Mplayer
+    """
 
     def __init__(self, socketLocation):
-        """@param string socketLocation The location of the communication socket"""
+        """@param string socketLocation The location of the communication socket
+        """
 
         # Instanciate the logger
         self.logger = logging.getLogger("touei.player.PlayerInterface")
@@ -78,8 +80,7 @@ class PlayerInterface():
         self.closeSocket()
 
     def closeSocket(self):
-        """
-        Close the socket. Don't use it lightly.
+        """Close the socket. Don't use it lightly.
         """
         self.logger.info("Closing socket")
         try:
@@ -90,8 +91,7 @@ class PlayerInterface():
         return True
 
     def openSocket(self):
-        """
-        Open the socket. Don't use it lightly.
+        """Open the socket. Don't use it lightly.
         """
         # Will lock until mplayer is listening.
         self.logger.info("Opening socket")
@@ -124,7 +124,8 @@ class PlayerInterface():
     def _execute(self,command):
         """Execute a given command with exception catching
         @param string command The command to execute
-        @return boolean True/False"""
+        @return boolean True/False
+        """
         try:
             result = self._communicate(command)
         except Exception,e:
@@ -132,8 +133,8 @@ class PlayerInterface():
             return False
         return result
     def pause(self):
-        """Pause/Unpause (depending on player status)"""
-
+        """Pause/Unpause (depending on player status)
+        """
         return self._execute(self._commands['pause'])
 
     def stop(self):
@@ -175,8 +176,7 @@ class PlayerInterface():
             return False
 
     def seek(self, forward, seekTime):
-        """
-        @param boolean forward Going forward(True) or backward(False)
+        """@param boolean forward Going forward(True) or backward(False)
         @param integer seekTime Seek by how many seconds
         @return boolean True/False
         """

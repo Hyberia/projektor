@@ -82,9 +82,8 @@ will be:
 ** File structure **
 
 The file structure is simple, inside the folder in the LOCATION config
-entry you will need one folder for each day. If Sunday is the 3rd (of any
-month) simple create a folder name "04" and put your files (named accordinly)
-in that folder.
+entry you will need one folder for each day. The name of the folder is the
+day of the month with a zero (aka 04 for the 4th of the month).
 If the location does not exist, the script will die.
 The script will also create the folder structure in the TMP-LOCATION.
 If you are not sure what is the structure delete the TMP-LOCATION folder

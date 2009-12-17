@@ -37,8 +37,7 @@ import logging
 module_logger = logging.getLogger("touei.daemon")
 
 class ToueiDaemon():
-    """
-    This class provide a way to keep the video database in memory and
+    """This class provide a way to keep the video database in memory and
     a fast way of checking witch video to play.
     """
     def __init__(self, playlist, player, config, mkv):
@@ -57,34 +56,29 @@ class ToueiDaemon():
         self._CurrentVideo = self._Config.get("video","recovery")
 
     def stop(self):
-        """
-        Stop the loop
+        """Stop the loop
         """
         self.logger.debug("stop() called")
         self._isRunning = False
 
     def playerRunning(self):
-        """
-        Will check for the player state file deleted by toueid.
+        """Will check for the player state file deleted by toueid.
         """
         return os.path.exists(self._Config.get("core","tmp-location")+"/player_running")
 
     def setPlayerRunning(self):
-        """
-        Create the file for toueid and the player state (if we crash)
+        """Create the file for toueid and the player state (if we crash)
         """
         if not self.playerRunning():
             open(self._Config.get("core","tmp-location")+"/player_running", "w").close()
 
     def getCurTime(self):
-        """
-        Return the current time with the block format.
+        """Return the current time with the block format.
         """
         return datetime.datetime.now().strftime("%H%M")
 
     def secondsDelta(self, blockStart):
-        """
-        Return the number of seconds since the begining of the current block
+        """Return the number of seconds since the begining of the current block
         @param string blockStart
         """
         delta = datetime.datetime.now() - datetime.datetime.strptime(str(blockStart),"%Y%m%d%H%M")
@@ -93,8 +87,7 @@ class ToueiDaemon():
         return delta.seconds
 
     def run(self):
-        """
-        Main daemon routine
+        """Main daemon routine
         """
         self.logger.debug("Entering run loop")
         self.logger.debug("Loop sleep time is %d seconds" % (self._Config.getint("timing","loop_sleep"), ) )
@@ -171,8 +164,7 @@ class ToueiDaemon():
             time.sleep(self._Config.getint("timing", "loop_sleep") )
 
     def _signalTerm(self,signal,frame):
-        """
-        Will exit the loop and let the application close.
+        """Will exit the loop and let the application close.
         """
         self.logger.warn("SIGNTERM signal received, quitting")
         self._isRunning = False
@@ -180,8 +172,7 @@ class ToueiDaemon():
             os.remove(self._Config.get("core","tmp-location")+"/player_running")
 
     def _signalCont(self, signal, frame):
-        """
-        Signal from the TOUEID process telling the loop that mplayer have
+        """Signal from the TOUEID process telling the loop that mplayer have
         been restart. replaying the current video.
         """
         self.logger.debug("Received signal %s" % (signal, ))
