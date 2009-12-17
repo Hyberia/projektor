@@ -29,7 +29,7 @@ please see http://elwillow.net/touei for more info.
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
-__revision__ = ""
+__revision__ = "36"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 # Editing the following will affect all ASS file generated within this

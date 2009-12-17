@@ -1,9 +1,11 @@
-#Created by Jamie Nadeau
+# Created by : Jamie Nadeau
+# Version    : 0.1
+# Revision   : 36
 
 CC = gcc
 CFLAGS = -g -Wall
 OBJECTS = toueid.o
-INCFLAGS = 
+INCFLAGS =
 LDFLAGS = -Wl,-rpath,/usr/local/lib
 LIBS = -L/usr/local/lib -lReadToueiConfig
 

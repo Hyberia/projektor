@@ -1,8 +1,9 @@
 //============================================================================
 // Name        : toueid.c
-// Author      : Jamie Nadeau
-// Contributors:
+// Author      : G-Anime
+// Contributors: Jamie Nadeau
 // Version     : 0.1
+// Revision    : 36
 // Copyright   : Eiffel Forum License 2.0
 // Description : Daemon that launches the projection system
 //============================================================================
@@ -64,7 +65,7 @@ void signal_handler(int sig) {
             exit(0);
             break;
         case SIGTERM:
-			system("kill -SIGTERM `pgrep touei_run`");
+            system("kill -SIGTERM `pgrep touei_run`");
             syslog(LOG_WARNING, "Received SIGTERM signal.");
             exit(0);
             break;
@@ -83,8 +84,8 @@ int  main(int argc, char *argv[])
 {
    //char lol[PATH_MAX+1];
 
-	// Setup signal handling before we start
-	signal(SIGABRT, signal_handler);
+    // Setup signal handling before we start
+    signal(SIGABRT, signal_handler);
     signal(SIGHUP, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
@@ -96,7 +97,7 @@ int  main(int argc, char *argv[])
     char tmpCath[450];
     char *tmpCat;
     char *Exec;
-	char *ToueiOut;
+    char *ToueiOut;
     register int i;
 
     tmpCat = &tmpCath;
@@ -142,11 +143,11 @@ int  main(int argc, char *argv[])
         }
     }
 #if defined(DEBUG)
-		setlogmask(LOG_UPTO(LOG_DEBUG));
-		openlog(DAEMON_NAME,LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
+        setlogmask(LOG_UPTO(LOG_DEBUG));
+        openlog(DAEMON_NAME,LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
 #else
-		setlogmask(LOG_UPTO(LOG_INFO));
-		openlog(DAEMON_NAME, LOG_CONS, LOG_USER);
+        setlogmask(LOG_UPTO(LOG_INFO));
+        openlog(DAEMON_NAME, LOG_CONS, LOG_USER);
 #endif
     syslog(LOG_INFO, "[INFO] %s daemon starting up",DAEMON_NAME);
 
@@ -164,9 +165,9 @@ int  main(int argc, char *argv[])
     ConfigValue[strlen(ConfigValue)]='\0';
     printf("[INFO] Read config\n");
 
-	ToueiOut = ReadConfParam(ConfigPath,"main_log");
-	ToueiOut[strlen(ConfigValue)]='\0';
-	printf("[INFO] Main log\n");
+    ToueiOut = ReadConfParam(ConfigPath,"main_log");
+    ToueiOut[strlen(ConfigValue)]='\0';
+    printf("[INFO] Main log\n");
 
     //ReadConfParam could not find configuration file
     if(strcmp(ConfigValue,"ERR404")==0)
@@ -222,8 +223,8 @@ int  main(int argc, char *argv[])
     {
         strcpy(tmpCat, CurrentPath);
         strcat(tmpCat,"touei_run  1>> touei_run.out 2>>");
-		strcat(tmpCat, ToueiOut);
-		strcat(tmpCat," &");
+        strcat(tmpCat, ToueiOut);
+        strcat(tmpCat," &");
         system(tmpCat);
         tmpCat[0]='\0';
     }
@@ -233,19 +234,19 @@ int  main(int argc, char *argv[])
     }
 
 
-	//Checking loop
-	while(1){
-		  /* mplayer check */
-		  rc=-1;
-		  rc=GetPID("ps -C mplayer -opid=");
-		  if ((kill(rc,0)!=0) || rc==-1)
-		  {
-		      //mplayer died :(
-		      printf("Oh noes mplayer died\n");
-		      syslog(LOG_WARNING,"[WARN] mplayer died");
+    //Checking loop
+    while(1){
+          /* mplayer check */
+          rc=-1;
+          rc=GetPID("ps -C mplayer -opid=");
+          if ((kill(rc,0)!=0) || rc==-1)
+          {
+              //mplayer died :(
+              printf("Oh noes mplayer died\n");
+              syslog(LOG_WARNING,"[WARN] mplayer died");
 
-		      //restart mplayer
-		      strcpy(tmpCat,"mplayer -idle -slave -quiet -fs -fixed-vo -input file=");
+              //restart mplayer
+              strcpy(tmpCat,"mplayer -idle -slave -quiet -fs -fixed-vo -input file=");
               strcat(tmpCat,ConfigValue);
               strcat(tmpCat, " 1>> mplayer.out 2>>mplayer.out &");
               Exec = malloc(strlen(tmpCat)+1);
@@ -256,40 +257,40 @@ int  main(int argc, char *argv[])
 
               remove("/tmp/touei/player_running");
 
-		      //Check if touei crashed as well
-		      rc=-1;
-		      rc=GetPID("ps -C touei_run -opid=");
-		      if((kill(rc,0)!=0) || rc==-1)
-		      {
-		          //touei died...probably jew code...
-		          printf("[WARN] Oh noes touei died\n");
-		          syslog(LOG_WARNING,"[WARN] touei died");
+              //Check if touei crashed as well
+              rc=-1;
+              rc=GetPID("ps -C touei_run -opid=");
+              if((kill(rc,0)!=0) || rc==-1)
+              {
+                  //touei died...probably jew code...
+                  printf("[WARN] Oh noes touei died\n");
+                  syslog(LOG_WARNING,"[WARN] touei died");
 
-				  strcpy(tmpCat, CurrentPath);
-		          strcat(tmpCat,"touei_run  1>> touei_run.out 2>>");
-				  strcat(tmpCat, ToueiOut);
-				  strcat(tmpCat," &");
+                  strcpy(tmpCat, CurrentPath);
+                  strcat(tmpCat,"touei_run  1>> touei_run.out 2>>");
+                  strcat(tmpCat, ToueiOut);
+                  strcat(tmpCat," &");
 
                   tmpCat[0]='\0';
-		          sleep(1);
-		      }
-		      else
-		      {
-		          //Notify touei that mplayer crashed
-		          kill(rc,SIGCONT); //Send SIGCONT signal to toeui (19,18,25)
-		      }
-		  }
-		  rc=-1;
-		  rc=GetPID("ps -C touei_run -opid=");
-		  if((kill(rc,0)!=0) || rc==-1)
-		  {
-		      //touei died...probably jew code...
-		      printf("[WARN] Oh noes python script died :(\n");
-		      syslog(LOG_WARNING,"[WARN] touei died");
+                  sleep(1);
+              }
+              else
+              {
+                  //Notify touei that mplayer crashed
+                  kill(rc,SIGCONT); //Send SIGCONT signal to toeui (19,18,25)
+              }
+          }
+          rc=-1;
+          rc=GetPID("ps -C touei_run -opid=");
+          if((kill(rc,0)!=0) || rc==-1)
+          {
+              //touei died...probably jew code...
+              printf("[WARN] Oh noes python script died :(\n");
+              syslog(LOG_WARNING,"[WARN] touei died");
 
-		      //Check if mplayer died before telling touei
-		      mpStart=GetPID("ps -C mplayer -opid=");
-		      if((kill(mpStart,0)!=0) || mpStart==-1)
+              //Check if mplayer died before telling touei
+              mpStart=GetPID("ps -C mplayer -opid=");
+              if((kill(mpStart,0)!=0) || mpStart==-1)
               {
                   printf("[WARN] Oh noes mplayer died :(\n");
                   syslog(LOG_WARNING,"[WARN] mplayer died");
@@ -306,27 +307,27 @@ int  main(int argc, char *argv[])
               }
               //recover touei
               strcpy(tmpCat, CurrentPath);
-        	  strcat(tmpCat,"touei_run  1>> touei_run.out 2>>");
-			  strcat(tmpCat, ToueiOut);
-			  strcat(tmpCat," &");
+              strcat(tmpCat,"touei_run  1>> touei_run.out 2>>");
+              strcat(tmpCat, ToueiOut);
+              strcat(tmpCat," &");
               tmpCat[0]='\0';
 
-		  }
-		  sleep(10);
-	}
+          }
+          sleep(10);
+    }
 
 
-	/* if loop breaks daemon exits*/
-	syslog(LOG_INFO, "[WARNING] %s daemon exiting checking loop: NOT NORMAL",DAEMON_NAME);
+    /* if loop breaks daemon exits*/
+    syslog(LOG_INFO, "[WARNING] %s daemon exiting checking loop: NOT NORMAL",DAEMON_NAME);
 
-	exit(0);
+    exit(0);
 }
 
 //Gets the directory in which the application is running
 void GetExecutingPath(char* buffer)
 {
-	if(readlink("/proc/self/exe",buffer,PATH_MAX)==-1)
-		printf("Error reading symlink");
+    if(readlink("/proc/self/exe",buffer,PATH_MAX)==-1)
+        printf("Error reading symlink");
 
 }
 

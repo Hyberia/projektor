@@ -1,4 +1,6 @@
-#Created by Jamie Nadeau
+# Created by : Jamie Nadeau
+# Version    : 0.1
+# Revision   : 36
 
 CC = g++
 MODULES= readconfig.o ReadConfigLib.o
@@ -17,14 +19,14 @@ readconfig.o: $(RCLOBJECTS)
 
 ReadConfigLib.o: $(RCLOBJECTS)
 	$(CC) -O2 -s -fpic -c ReadConfigLib.cpp -o ReadConfigLib.o
-	
+
 
 install:
 	cp libReadToueiConfig.so /usr/local/lib
-	
+
 uninstall:
 	rm /usr/local/lib/libReadToueiConfig.so
-	
+
 count:
 	wc *.c *.cc *.C *.cpp *.h *.hpp
 
