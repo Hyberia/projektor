@@ -1,8 +1,11 @@
 touei README
 ============
 
+Version  : 0.1
+Revision : 36
+
 1) Authors and thanks
-----------------
+---------------------
 
 * Mathieu Charron  (LP: elwillow)
 * Jamie Nadeau     (LP: james2432)
@@ -16,7 +19,6 @@ Thanks to:
 
 The MPlayer project for their outstanding player
 Matroska for their great container that don't suck.
-Gentoo et Funtoo for their Distro.
 
 2) Licensing
 ------------
@@ -54,30 +56,29 @@ DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 @TODO: Missing how to configure xorg and initrc
 @TODO: add source for software
 
-
-4) Installation
----------------
+4) Prerequisites
+----------------
 
 ** filename pattern **
 
 First you need to rename your file according to a specific pattern:
-* The first 4 characters are the time the video will be played in
+- The first 4 characters are the time the video will be played in
   24 military hours format (4h00 PM = 1600).
   You time need to comply to a _modulus 5_. 1604 is not valid.
 
-* A dot "."
+- A dot "."
 
-* The name of the video. it will be used for the subtitling of the
+- The name of the video. it will be used for the subtitling of the
   introduction video. It NEEDS to be unique.
   NO SPACE. Use underscore, they will be replace by space. Also, don't
   worry about the case, it will be `Title` for the intro video.
 
-* The ".mkv" string for extension.
+- The ".mkv" string for extension.
 
 If you want to play "Higurashi no Naku Koro ni" at 3h45 PM the filename
 will be:
 
-- 1545.Higurashi_no_Naku_Koro_ni.mkv
+   1545.Higurashi_no_Naku_Koro_ni.mkv
 
 ** File structure **
 
@@ -90,10 +91,46 @@ If you are not sure what is the structure delete the TMP-LOCATION folder
 and it will be recreated.
 
 Since the default is in the /tmp you should worry to much, it is wipe
-at each reboot. Just make sure there is enough space for the intro video.
+at each reboot. Just make sure there is enough space for the intro videos.
 
 
-5) Configuration
+5) Installation
+---------------
+
+Until there is a better way to install this setup, follow these instructions:
+
+- Build and install the toueid daemon:
+  cd touei/readconfig
+  make                      # build libReadConfig.so
+  sudo make install         # Install it (to /usr/local/lib)
+  cd ../toueid
+  make                      # Build toueid
+  sudo make install         # Install it (to /usr/local/bin)
+  cd ..
+
+- Copy the folder touei to your sites-packages. normally something like
+  /usr/local/lib/python2.6/site-packages/
+
+- Copy the sample configuration file to /etc/touei.conf
+  Change the config
+
+- copy touei_run to /usr/local/bin and allow execution (chmod +x)
+
+- Now run toueid and check if there is any error in the logs
+  Just hit ctrl+c when you're done (toueid will send SIGTERM to mplayer and
+  touei_run
+
+- Set whatever script you will use to monitor the status of toueid
+  (The inittab is a good location).
+
+- Enjoy
+
+***** WARNING WARNING ******
+THIS IS A BETA, WE ARE NOT RESPONSABLE IF YOUR MACHINE EXPLODE.
+PLEASE BE AWARE THAT IT IS NOT PRODUCTION READY.
+We hope 0.2 will be.
+
+6) Configuration
 ----------------
 
 Please see the touei.conf.sample for the configuration instruction.
@@ -102,7 +139,7 @@ The default location is /etc/touei.conf. You can set a different path
 in the touei_run file (located in /usr/local/bin) but it will break the
 daemon.
 
-6) Reference
+7) Reference
 -----------
 
 Subtitle: http://www.matroska.org/technical/specs/subtitles/ssa.html

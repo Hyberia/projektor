@@ -31,7 +31,7 @@ __contributors__= "Mathieu Charron, Martin Samson"
 
 # Set this to your configuration file.
 # default is /etc/touei.conf
-CONFIG_FILE = "touei.conf"
+CONFIG_FILE = "/etc/touei.conf"
 # ALL OTHER CONFIGURATION ARE DONE IN THIS FILE.
 
 
