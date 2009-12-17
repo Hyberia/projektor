@@ -40,10 +40,12 @@ class CommandEmptyException(Exception): pass
 class CommandMalformedException(Exception): pass
 
 class PlayerInterface():
-    """Abstraction class to Mplayer"""
+    """Abstraction class to Mplayer
+    """
 
     def __init__(self, socketLocation):
-        """@param string socketLocation The location of the communication socket"""
+        """@param string socketLocation The location of the communication socket
+        """
 
         # Instanciate the logger
         self.logger = logging.getLogger("touei.player.PlayerInterface")
@@ -58,11 +60,9 @@ class PlayerInterface():
         self.socketLocation = socketLocation
         self.socket = None
 
-        #Will lock until mplayer is listening.
-        try:
-           self.socket = os.open(socketLocation, os.O_WRONLY)
-        except Exception,e:
-            raise e
+
+        # open socket
+        self.openSocket()
 
         self._commands = {}
         self._commands['open_file'] = "loadfile %s %d\n"
@@ -76,12 +76,29 @@ class PlayerInterface():
         if not self.socket:
             return False
 
+        # Close the socket
+        self.closeSocket()
+
+    def closeSocket(self):
+        """Close the socket. Don't use it lightly.
+        """
+        self.logger.info("Closing socket")
         try:
             os.close(self.socket)
         except Exception,e:
             print e
             return False
         return True
+
+    def openSocket(self):
+        """Open the socket. Don't use it lightly.
+        """
+        # Will lock until mplayer is listening.
+        self.logger.info("Opening socket")
+        try:
+           self.socket = os.open(self.socketLocation, os.O_WRONLY)
+        except Exception,e:
+            raise e
 
     def _communicate(self,command):
         """Communicate with mplayer thru the socket. Does some basic command verifications
@@ -107,7 +124,8 @@ class PlayerInterface():
     def _execute(self,command):
         """Execute a given command with exception catching
         @param string command The command to execute
-        @return boolean True/False"""
+        @return boolean True/False
+        """
         try:
             result = self._communicate(command)
         except Exception,e:
@@ -115,8 +133,8 @@ class PlayerInterface():
             return False
         return result
     def pause(self):
-        """Pause/Unpause (depending on player status)"""
-
+        """Pause/Unpause (depending on player status)
+        """
         return self._execute(self._commands['pause'])
 
     def stop(self):
@@ -158,19 +176,22 @@ class PlayerInterface():
             return False
 
     def seek(self, forward, seekTime):
-        """
-        @param boolean forward Going forward(True) or backward(False)
-        @param integer seekTime Seek by how many minutes
+        """@param boolean forward Going forward(True) or backward(False)
+        @param integer seekTime Seek by how many seconds
         @return boolean True/False
         """
         if forward:
             direction = "+"
         else:
             direction = "-"
+        if seekTime > 1:
+            self.logger.debug("Seeking %s %d seconds" % (direction, seekTime))
+            command = self._commands['seek'] % (direction, seekTime)
+            return self._execute(command)
+        else:
+            self.logger.debug("Seek time was less than 1 (%d)" % (seekTime, ))
+            return True
 
-        command = self._commands['seek'] % (direction, seekTime * 60)
-
-        return self._execute(command)
 
 if __name__ == "__main__":
     print "##### DEBUG ######"

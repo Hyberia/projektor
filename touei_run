@@ -46,6 +46,7 @@ import ConfigParser
 import time
 import os
 import sys
+# @TODO Something is fishy.
 import touei
 from touei import *
 
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     #print config
     # Check if the config file exists:
     if os.path.exists(CONFIG_FILE):
-        print "Loading config"
+        #print "Loading config"
         config.read(CONFIG_FILE)
     else: print "Cannot load config"
 
@@ -67,17 +68,18 @@ if __name__ == "__main__":
     # Create file handler
     fh = logging.FileHandler(config.get('logs','main_log'))
 
-    # Create the console logging
-    ch = logging.StreamHandler()
+    # Create the console logging if debug level is 10
+    if config.get("logs", "debug_level") == 10:
+        ch = logging.StreamHandler()
+        cformatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
+        ch.setFormatter(cformatter)
+        logger.addHandler(ch)
 
     # Set formating
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    cformatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
-    ch.setFormatter(cformatter)
     fh.setFormatter(formatter)
 
     # Add the handler to logger
-    logger.addHandler(ch)
     logger.addHandler(fh)
 
     # Do some sanity check before starting the system

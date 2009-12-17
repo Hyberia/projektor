@@ -211,7 +211,8 @@ class PlayList():
         except Exception,e:
             print e
             return False
-        print schedule
+        # Enable for debuging purposes
+        #print schedule
         for date in schedule.keys():
             for time in schedule[date].keys():
                 datetime_start = schedule[date][time]['datetime_start']

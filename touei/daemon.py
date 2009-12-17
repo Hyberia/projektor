@@ -18,9 +18,16 @@
 # DISCLAIMED. IN NO EVENT SHALL THE AUTHORS BE LIABLE TO ANY PARTY FOR
 # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
+"""
+this is the deamon module part of the Touei project.
+please see http://elwillow.net/touei for more info.
+"""
 
-__author__ ="GAnime"
-__contributors__ = "Martin Samson <pyrolian@gmail.com>"
+__author__ = "G-Anime"
+__license__ = "Eiffel Version 2"
+__version__ = "0.1"
+__revision__ = ""
+__contributors__= "Mathieu Charron, Martin Samson"
 
 import time, signal, datetime, os
 import mkvutils
@@ -30,8 +37,7 @@ import logging
 module_logger = logging.getLogger("touei.daemon")
 
 class ToueiDaemon():
-    """
-    This class provide a way to keep the video database in memory and
+    """This class provide a way to keep the video database in memory and
     a fast way of checking witch video to play.
     """
     def __init__(self, playlist, player, config, mkv):
@@ -50,26 +56,51 @@ class ToueiDaemon():
         self._CurrentVideo = self._Config.get("video","recovery")
 
     def stop(self):
+        """Stop the loop
+        """
         self.logger.debug("stop() called")
         self._isRunning = False
 
+    def playerRunning(self):
+        """Will check for the player state file deleted by toueid.
+        """
+        return os.path.exists(self._Config.get("core","tmp-location")+"/player_running")
+
+    def setPlayerRunning(self):
+        """Create the file for toueid and the player state (if we crash)
+        """
+        if not self.playerRunning():
+            open(self._Config.get("core","tmp-location")+"/player_running", "w").close()
+
     def getCurTime(self):
-        self.logger.debug("getCurTime() called. Time is: " + datetime.datetime.now().strftime("%H%M"))
+        """Return the current time with the block format.
+        """
         return datetime.datetime.now().strftime("%H%M")
 
+    def secondsDelta(self, blockStart):
+        """Return the number of seconds since the begining of the current block
+        @param string blockStart
+        """
+        delta = datetime.datetime.now() - datetime.datetime.strptime(str(blockStart),"%Y%m%d%H%M")
+        print delta
+        self.logger.debug("BLOCK DELTA IS %d SECONDS" % (delta.seconds, ) )
+        return delta.seconds
+
     def run(self):
+        """Main daemon routine
+        """
         self.logger.debug("Entering run loop")
-        curTime = self.getCurTime()
+        self.logger.debug("Loop sleep time is %d seconds" % (self._Config.getint("timing","loop_sleep"), ) )
         # This will containt a sq3.row instance
         CurrentVideo = {}
         # For logging purposes
-        loopCounter = 0
         while(self._isRunning):
-            self.logger.info("Entering Loop %s" % (loopCounter,))
-            video = self._Playlist.get()
+            self.logger.info("Entering Loop at %s" % (datetime.datetime.now().strftime("%H%M.%S"),))
+            curTime = self.getCurTime()
+            self.video = self._Playlist.get()
             self.logger.debug("Current Video: " + self._CurrentVideo)
             #self.logger.debug("Playlist Video: " + video['file'])
-            if not video:
+            if not self.video:
                 # Nothing for current time, Play standby video
                 self.logger.debug("No video for current block")
                 if self._CurrentVideo == self._Config.get("video","standby"):
@@ -79,54 +110,102 @@ class ToueiDaemon():
                     # Play the standby video
                     self.logger.info("Playing standby video")
                     self._CurrentVideo = self._Config.get("video","standby")
-                    self._Player.openFile(self._CurrentVideo)
+                    # Open the file is "soft" mode, aka append.
+                    self._Player.openFile(self._CurrentVideo, True)
 
-            elif self._CurrentVideo != video['file']:
+            elif self._CurrentVideo != self.video['file']:
                 # We have a new video to play (apparently)
                 self.logger.debug("Current video is different")
-                currentVideo = video
-                self._CurrentVideo = video['file']
+                currentVideo = self.video
+                self._CurrentVideo = self.video['file']
                 # Create the intro file
-                introVideo = self._MkvUtils.generate_intro(os.path.split(video['file'])[1])
-                self.logger.debug("Intro video is " + introVideo)
+                introVideo = self._MkvUtils.generate_intro(os.path.split(self.video['file'])[1])
+                self.logger.debug("Restoring: Intro video is " + introVideo)
 
-                # Send the intro to player
-                self._Player.openFile(introVideo)
-                # Send the video to player
-                self._Player.openFile(self._CurrentVideo, True)
-                # Send the outro to player
-                #self._Player.openFile(self._Config.get("video","outro"))
+                # Check if the video is alive
+                if not self.playerRunning():
+                    # Not running, we have to restore the video
+                    self.logger.warn("Player was dead, restoring")
+                    bDelta = self.secondsDelta(self.video['datetime_start'])
+                    # Check if we want the intro video
+                    if bDelta < self._Config.getint("timing", "loop_sleep"):
+                        # Within the sleep timer
+                        self.logger.info("Within the loop_sleep time, Playing block")
+                        self._Player.openFile(introVideo)
+
+                    # Send the video to player
+                    self._Player.openFile(self._CurrentVideo, True)
+
+                    # Check if we need to seek
+                    if bDelta > self._Config.getint("timing","recovery_time")*2:
+                        # We need to seek
+                        self.logger.info("Over the twice recovery time, seeking")
+                        # Send the seek commands
+                        self._Player.seek(True, bDelta)
+                    else:
+                        # We are within the recovery time, don't seek
+                        self.logger.info("Restoring: Wihin the recovery, doing nothing")
+                    # Send the intro to player
+
+
+                    # Send the outro to player
+                    #self._Player.openFile(self._Config.get("video","outro"))
+                    # Recreate the file
+                    self.setPlayerRunning()
+                else:
+                    # Player is still alive, do nothing
+                    self.logger.warn("Player is still alive, sleeping")
+
             else:
                 # Nothing to do, video is playing
                 # It could also mean we just went through a _signalCont()
                 self.logger.debug("Still playing, sleeping")
             self.logger.debug("Loop ending")
-            loopCounter = loopCounter + 1
-            time.sleep(10)
+            time.sleep(self._Config.getint("timing", "loop_sleep") )
 
     def _signalTerm(self,signal,frame):
-        """
-        Will exit the loop and let the application close.
+        """Will exit the loop and let the application close.
         """
         self.logger.warn("SIGNTERM signal received, quitting")
         self._isRunning = False
+        if self.playerRunning():
+            os.remove(self._Config.get("core","tmp-location")+"/player_running")
 
     def _signalCont(self, signal, frame):
-        """
-        Signal from the TOUEID process telling the loop that mplayer have
+        """Signal from the TOUEID process telling the loop that mplayer have
         been restart. replaying the current video.
         """
-        if signal == 25:
+        self.logger.debug("Received signal %s" % (signal, ))
+        if signal == 18:
             # we restore the current video
-            self.logger.warn("SIGCONT(25) signal received, restoring video")
-            # @TODO add the seek feature when mplayer crash in the middle of a video
+            self.logger.warn("SIGCONT signal received, restoring video")
+            # @TODO Add the seek feature when mplayer crash in the middle of a video
+
+            # Close the socket et reopen it
+            self._Player.closeSocket()
+            self._Player.openSocket()
 
             # Force play it
             self._Player.openFile(self._CurrentVideo)
-        elif signal == 18:
-            # We rebuild the playlist database
-            self.logger.warn("Signal 18 received, rebuilding video DB")
-            self._Playlist.load(self._Config.get("video", "location"))
+            # @TODO Add the seek to restore the video where is was
+
+            # Get the delta
+            bDelta = self.secondsDelta(self.video['datetime_start'])
+            if bDelta > self._Config.getint("timing","recovery_time")*2:
+                # We need to seek
+                self.logger.info("Restoring: Over the twice recovery time, seeking")
+                # Send the seek commands
+                self._Player.seek(True, bDelta)
+            else:
+                # We are within the recovery time, don't seek
+                self.logger.info("Restoring: Wihin the recovery, doing nothing")
+
+        # REMOVED, simply kill touei_run and toueid will restart it and generate
+        # The new stuff
+        #elif signal == 25:
+            ## We rebuild the playlist database
+            #self.logger.warn("Signal 25 received, rebuilding video DB")
+            #self._Playlist.load(self._Config.get("video", "location"))
 
 
 if __name__ == "__main__":
