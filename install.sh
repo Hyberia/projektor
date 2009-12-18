@@ -43,7 +43,7 @@ case "$COMMAND" in
 	cd ..
 
 	echo "Installing touei"
-	python setup.py --record $COMMAND
+	python setup.py $COMMAND --record uninstall.db
 	
 #end of install
 ;;
@@ -59,7 +59,7 @@ case "$COMMAND" in
 	cd ..
 	
 	echo "Uninstalling touei"
-	python setup.py $COMMAND
+	cat uninstall.db | xargs rm -rf
 #end uninstall
 ;;
 'clean')
