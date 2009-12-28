@@ -1,0 +1,206 @@
+#!/usr/bin/python
+##
+## Configuration
+##
+# Work folder
+screensFolder = "./screens/"
+serverAddress = "http://shinku:8000/screens/"
+
+# Port to run the server on (have to be higher than 1023)
+port=8000
+
+# Metalink header
+metalink_header="""<?xml version="1.0" encoding="UTF-8"?>
+<metalink version="3.0"
+  xmlns="http://www.metalinker.org/"
+  generator="http://projects.elwillow.net/touei:server/"
+  >
+<files>
+"""
+metalink_footer="""
+</files>
+</metalink>
+"""
+
+### END configuration ###
+
+import BaseHTTPServer, SimpleHTTPServer
+import os, sys, math
+from optparse import OptionParser
+import string, hashlib
+
+def consoleMsg(msg):
+    """Format and print console message"""
+    print msg
+
+def server(server_class=BaseHTTPServer.HTTPServer,
+        handler_class=SimpleHTTPServer.SimpleHTTPRequestHandler):
+    """Run the SimpleHTTPServer for the file distribution"""
+    print 'Server version:',handler_class.server_version
+    server_address = ('', port)
+    httpd = server_class(server_address, handler_class)
+    print 'Serving files from:',screensFolder
+    print 'To stop the server, type ^C.'
+    httpd.serve_forever()
+
+def _hashFile(filename):
+    """Create the
+    @PARAM string filename path to the filename
+    @RETURN a tuple with the size and the SHA1 hash
+    """
+    #def scan_file(self, filename, use_chunks=True, max_chunks=255, chunk_size=256, progresslistener=None):
+    use_chunks=True
+    max_chunks=255
+    chunk_size=256
+    progresslistener=None
+    if options.verbose: consoleMsg("Scanning file..."+filename)
+    # Filename and size
+    #self.filename = os.path.basename(filename)
+    size = os.stat(filename).st_size
+
+    # Calculate piece length
+    if use_chunks:
+        minlength = chunk_size*1024
+        piecelength = 1024
+        while size / piecelength > max_chunks or piecelength < minlength:
+            piecelength *= 2
+        if options.verbose: consoleMsg("Using piecelength %d (%sKiB)" % (piecelength, str(piecelength / 1024)))
+        numpieces = size / piecelength
+        if numpieces < 2: use_chunks = False
+
+    # Try to use hashlib
+    hash = hashlib.sha1()
+    sha1hash_copy = hash.copy()
+    piecehash = sha1hash_copy.copy()
+    piecenum = 0
+    length = 0
+
+    num_reads = math.ceil(size / 4096.0)
+    reads_per_progress = int(math.ceil(num_reads / 100.0))
+    reads_left = reads_per_progress
+    progress = 0
+    fp = open(filename, "rb")
+    while True:
+        data = fp.read(4096)
+        if data == "": break
+        # Progress updating
+        if progresslistener:
+            reads_left -= 1
+            if reads_left <= 0:
+                reads_left = reads_per_progress
+                progress += 1
+                result = progresslistener.Update(progress)
+                if get_first(result) == False:
+                    if options.verbose: consoleMsg("Cancelling scan!")
+                    return False
+        # Process the data
+        if hash: hash.update(data)
+        left = len(data)
+    fp.close()
+    # TODO: Why len(self.pieces) < 2 ?
+    # Convert to string
+    piecelength = str(piecelength)
+    if options.verbose: consoleMsg("done")
+    if progresslistener: progresslistener.Update(100)
+    return (size, hash.hexdigest())
+
+def run():
+    """"""
+    if options.all:
+        # Run for all screen ID
+        for dir in os.listdir(screensFolder):
+            if os.path.isdir(screensFolder+dir):
+                if options.check:
+                    _check(dir)
+                else:
+                    _generate(dir)
+    elif args:
+        for screen in args:
+            if options.check:
+                _check(screen)
+            else:
+                _generate(screen)
+    else:
+        consoleMsg("*** No ScreenID supplied ***\nPossible ScreenID are:")
+        for dir in os.listdir(screensFolder):
+            if os.path.isdir(screensFolder+dir):
+                print "-> %s" % dir
+        consoleMsg("Or use [-a] for all.")
+
+def _check(screen):
+    """Will do the check for a given screenID
+    This is not yet implented. Please use aria2c or metalink to check
+    (If you used aria2c for the transfert you don't need to check it again)
+    """
+    consoleMsg("Running check for ScreenID %s" % (screen))
+    consoleMsg("FEATURE NOT IMPLENTED. PLEASE USE ARIA2C OR METALINK")
+
+def _generate(screen):
+    """Generate the .metalink for the distribution server
+    """
+    consoleMsg("Generating ScreenID %s metalink" % (screen))
+    metalinkFile = open(screensFolder+screen+".metalink","w")
+    metalinkFile.write(metalink_header)
+    for root, dirs, files in os.walk(screensFolder+screen):
+        if options.verbose: consoleMsg("Working directory: %s" % (root))
+        if files:
+            for file in files:
+                data = _hashFile(root+"/"+file)
+                if options.verbose: consoleMsg("   Size: %d, SHA1: %s" % data)
+                metalinkFile.write(_metaFile(root, file, data, screen))
+
+    metalinkFile.write(metalink_footer)
+    metalinkFile.close()
+
+def _metaFile(root, file, data, screen):
+    """Generate the file entry for the metalink file"""
+    serverPath = root.replace(screensFolder,"")
+    localPath = serverPath.replace(screen, "")
+    if localPath != "":
+        localPath = localPath[1:] + "/" + file
+    else: localPath = file
+    text = """    <file name="%s">
+        <size>%d</size>
+        <verification>
+            <hash type="sha1">%s</hash>
+        </verification>
+        <resources>
+            <url type="http">%s/%s</url>
+        </resources>
+    </file>
+"""% (localPath, data[0], data[1], serverAddress+serverPath, file)
+    return text
+
+if __name__ == "__main__":
+
+    # Create the parser
+    usage = "usage: %prog -v [-c|-d|-g] -a, ScreenID"
+    parser = OptionParser(usage=usage)
+    parser.add_option("-a", "--all", action="store_true",
+                    help="Select all screen ID", default=False)
+    parser.add_option("-v", "--verbose", action="store_true", default=False,
+                    help="don't print status messages to stdout")
+
+    parser.add_option("-c", "--check", action="store_true", default=False,
+                    help="Run the checksum")
+    parser.add_option("-d", "--distribute", action="store_true", default=False,
+                    help="Run the server")
+    parser.add_option("-g", "--generate", action="store_true", default=False,
+                    help="Generate metalink and md5sum for a screen ID")
+
+    # Parse the argument
+    (options, args) = parser.parse_args()
+
+    if  (options.check and options.distribute) or \
+        (options.distribute and options.generate) or \
+        (options.check and options.generate):
+        parser.error("Options -g, -c and -d are mutually exclusive")
+
+    # run the server
+    if options.distribute:
+        server()
+    elif options.check or options.generate:
+        run()
+    else:
+        parser.error("Operation missing.")
+        #print os.listdir(screensFolder)
