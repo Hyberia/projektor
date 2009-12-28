@@ -126,6 +126,12 @@ class MkvUtils():
 
     def _already_assed(self, presentation):
         """Check if the ASS for a given presentation exist
+        If you want to use a custom ASS file simply copy it to the
+        default folder. This script will not overwrite already created
+        subtitle files.
+        Note: The /tmp folder is wipe at reboot. Not exactly the best solution.
+        @TODO Make this do something more useful
+
         @param string presentation
         @return boolean True/False
         """
@@ -181,31 +187,31 @@ class MkvUtils():
         intro_file = "%s/intro/%s" % (self._Config.get("video", "tmp-location"), presentation)
         # check if the file exist
         if self._already_assed(presentation):
-            self.logger.debug("ASS: Present")
+            self.logger.debug("Intro Generation, ASS: Present")
             # Do we have a MKV?
             if self._already_muxed(presentation):
                 # We do... do nothing
-                self.logger.debug("MKV: Present")
+                self.logger.debug("Intro Generation, MKV: Present")
                 return intro_file
             else:
                 # We'll take the already create ASS for the muxing
-                self.logger.debug("MKV: Generating...")
+                self.logger.debug("Intro Generation, MKV: Generating...")
                 self._mux_mkv(presentation)
                 return intro_file
         else:
-            self.logger.debug("ASS: Missing")
+            self.logger.debug("Intro Generation, ASS: Missing")
             # Do we have a intro MKV?
             if self._already_muxed(presentation):
                 # strange, no ass but there is a MKV for the intro.
                 # Won't do a thing
-                self.logger.debug("MKV: Present")
+                self.logger.debug("Intro Generation, MKV: Present")
                 return intro_file
             else:
-                self.logger.debug("MKV: Missing")
+                self.logger.debug("Intro Generation, MKV: Missing")
                 # We have to generate the whole intro file
-                self.logger.debug("ASS: Generating...")
+                self.logger.debug("Intro Generation, ASS: Generating...")
                 self._gen_ass(presentation)
-                self.logger.debug("ASS: Generating...")
+                self.logger.debug("Intro Generation, MKV: Generating...")
                 self._mux_mkv(presentation)
                 return intro_file
 
