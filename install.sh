@@ -15,10 +15,10 @@ fi
 
 
 #Get number of arguments
-COMMAND=
+COMMAND='install'
 
 
-if ["$1"=""]; then
+if ["$1" -eq ""]; then
    COMMAND='install'
 else
    COMMAND=$1
