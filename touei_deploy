@@ -3,7 +3,7 @@
 ## Configuration
 ##
 # Work folder
-screensFolder = "./screens/"
+screensFolder = "/home/elwillow/G-Anime/screens/"
 serverAddress = "http://shinku:8000/screens/"
 
 # Port to run the server on (have to be higher than 1023)
@@ -29,9 +29,18 @@ import os, sys, math
 from optparse import OptionParser
 import string, hashlib
 
-def consoleMsg(msg):
+def consoleMsg(msg, msg2=""):
     """Format and print console message"""
-    print msg
+    if msg2 == "":
+        print msg
+    else:
+        a = len(str(msg2))
+        if a > 60:
+            m = a - 60
+            t2 = "[...]" + str(msg2)[m:]
+        else:
+            t2 = str(msg2)
+        print "{0:>10}: {1:<10}".format(msg, t2)
 
 def server(server_class=BaseHTTPServer.HTTPServer,
         handler_class=SimpleHTTPServer.SimpleHTTPRequestHandler):
@@ -53,27 +62,13 @@ def _hashFile(filename):
     max_chunks=255
     chunk_size=256
     progresslistener=None
-    if options.verbose: consoleMsg("Scanning file..."+filename)
+    if options.verbose: consoleMsg("HASHING", filename)
     # Filename and size
     #self.filename = os.path.basename(filename)
     size = os.stat(filename).st_size
 
-    # Calculate piece length
-    if use_chunks:
-        minlength = chunk_size*1024
-        piecelength = 1024
-        while size / piecelength > max_chunks or piecelength < minlength:
-            piecelength *= 2
-        if options.verbose: consoleMsg("Using piecelength %d (%sKiB)" % (piecelength, str(piecelength / 1024)))
-        numpieces = size / piecelength
-        if numpieces < 2: use_chunks = False
-
     # Try to use hashlib
     hash = hashlib.sha1()
-    sha1hash_copy = hash.copy()
-    piecehash = sha1hash_copy.copy()
-    piecenum = 0
-    length = 0
 
     num_reads = math.ceil(size / 4096.0)
     reads_per_progress = int(math.ceil(num_reads / 100.0))
@@ -99,8 +94,6 @@ def _hashFile(filename):
     fp.close()
     # TODO: Why len(self.pieces) < 2 ?
     # Convert to string
-    piecelength = str(piecelength)
-    if options.verbose: consoleMsg("done")
     if progresslistener: progresslistener.Update(100)
     return (size, hash.hexdigest())
 
@@ -139,18 +132,28 @@ def _generate(screen):
     """Generate the .metalink for the distribution server
     """
     consoleMsg("Generating ScreenID %s metalink" % (screen))
-    metalinkFile = open(screensFolder+screen+".metalink","w")
-    metalinkFile.write(metalink_header)
-    for root, dirs, files in os.walk(screensFolder+screen):
-        if options.verbose: consoleMsg("Working directory: %s" % (root))
-        if files:
-            for file in files:
-                data = _hashFile(root+"/"+file)
-                if options.verbose: consoleMsg("   Size: %d, SHA1: %s" % data)
-                metalinkFile.write(_metaFile(root, file, data, screen))
+    outFile = screensFolder+screen+".metalink"
+    if os.path.exists(outFile):
+        if options.verbose: consoleMsg("Metalink file already exist")
+    if options.force:
+        consoleMsg("Overwriting file")
+        metalinkFile = open(outFile,"w")
+        metalinkFile.write(metalink_header)
+        for root, dirs, files in os.walk(screensFolder+screen):
+            if options.verbose: consoleMsg("Working directory", root)
+            if files:
+                for file in files:
+                    data = _hashFile(root+"/"+file)
+                    if options.verbose:
+                        consoleMsg("Size", data[0])
+                        consoleMsg("SHA1", data[1])
+                    metalinkFile.write(_metaFile(root, file, data, screen))
 
-    metalinkFile.write(metalink_footer)
-    metalinkFile.close()
+        metalinkFile.write(metalink_footer)
+        metalinkFile.close()
+        consoleMsg("File saved to", screensFolder+screen+".metalink")
+    else:
+        consoleMsg("Skipping")
 
 def _metaFile(root, file, data, screen):
     """Generate the file entry for the metalink file"""
@@ -180,6 +183,8 @@ if __name__ == "__main__":
                     help="Select all screen ID", default=False)
     parser.add_option("-v", "--verbose", action="store_true", default=False,
                     help="don't print status messages to stdout")
+    parser.add_option("-f", "--force", action="store_true", default=False,
+                    help="Force overwrite of files when generating metalink file")
 
     parser.add_option("-c", "--check", action="store_true", default=False,
                     help="Run the checksum")
