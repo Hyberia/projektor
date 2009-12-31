@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Eiffel Forum License, version 2
 #
@@ -26,7 +26,7 @@ please see http://elwillow.net/touei for more info.
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
-__revision__ = ""
+__revision__ = "39"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 import time, signal, datetime, os

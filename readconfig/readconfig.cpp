@@ -1,3 +1,13 @@
+//============================================================================
+// Name        : readconfig.cpp
+// Author      : G-Anime
+// Contributors: Jamie Nadeau
+// Version     : 0.1
+// Revision    : 36
+// Copyright   : Eiffel Forum License 2.0
+// Description : Module to read config file
+//============================================================================
+
 #include "readconfig.h"
 #include <iostream>
 #include <cstdio>

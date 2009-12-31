@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Eiffel Forum License, version 2
 #
@@ -25,7 +25,7 @@ Provide an abstraction layer to control mplayer via the slave command.
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
 __version__ = "0.1"
-__revision__ = ""
+__revision__ = "39"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 import sys,os

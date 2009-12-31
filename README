@@ -1,8 +1,11 @@
 touei README
 ============
 
+Version  : 0.1
+Revision : 43
+
 1) Authors and thanks
-----------------
+---------------------
 
 * Mathieu Charron  (LP: elwillow)
 * Jamie Nadeau     (LP: james2432)
@@ -15,8 +18,7 @@ contribution from:
 Thanks to:
 
 The MPlayer project for their outstanding player
-Matroska for their great container that don't suck.
-Gentoo et Funtoo for their Distro.
+Matroska for their great container that doesn't suck.
 
 2) Licensing
 ------------
@@ -44,7 +46,8 @@ DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 ---------------
 
 * Python 2.6
-* C compiler (like gcc)
+* C compiler (gcc)
+* C++ compiler (g++)
 * mkvtoolnix
 * MPlayer with demuxer for you video files
 * Custom xorg configuration (optional)
@@ -54,55 +57,91 @@ DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 @TODO: Missing how to configure xorg and initrc
 @TODO: add source for software
 
+There is NO check if those programs are installed. You should make sure they are.
 
-4) Installation
----------------
+4) Prerequisites
+----------------
 
 ** filename pattern **
 
 First you need to rename your file according to a specific pattern:
-* The first 4 characters are the time the video will be played in
+- The first 4 characters are the time the video will be played in
   24 military hours format (4h00 PM = 1600).
-  You time need to comply to a _modulus 5_. 1604 is not valid.
+  Minutes need to comply with a modulus 5, meaning must be a multiple of 5. 1604 is invalid.
 
-* A dot "."
+- A dot "."
 
-* The name of the video. it will be used for the subtitling of the
+- The name of the video. it will be used for the subtitling of the
   introduction video. It NEEDS to be unique.
-  NO SPACE. Use underscore, they will be replace by space. Also, don't
+  NO SPACE. Use underscores, they will be replaced by space. Also, don't
   worry about the case, it will be `Title` for the intro video.
 
-* The ".mkv" string for extension.
+- The ".mkv" string for extension.
 
 If you want to play "Higurashi no Naku Koro ni" at 3h45 PM the filename
 will be:
 
-- 1545.Higurashi_no_Naku_Koro_ni.mkv
+   1545.Higurashi_no_Naku_Koro_ni.mkv
 
 ** File structure **
 
 The file structure is simple, inside the folder in the LOCATION config
-entry you will need one folder for each day. The name of the folder is the
-day of the month with a zero (aka 04 for the 4th of the month).
+entry you will need one folder for each day. The name of the folder is a
+zero padded day of the month(04 for the 4th of the month,10 for the 10th of the month).
 If the location does not exist, the script will die.
 The script will also create the folder structure in the TMP-LOCATION.
 If you are not sure what is the structure delete the TMP-LOCATION folder
 and it will be recreated.
 
-Since the default is in the /tmp you should worry to much, it is wipe
-at each reboot. Just make sure there is enough space for the intro video.
+Since the default is in the /tmp you shouldn't worry to much, as it is wiped
+at each reboot. Just make sure there is enough space for the intro videos.
 
 
-5) Configuration
+5) Installation
+---------------
+
+Until there is a better way to install this setup, follow these instructions:
+
+- Execute as root:
+    ./install.sh
+  It will build and install toueid and readconfig then execute setup.py.
+  
+  This accepts the fallowing arguments: install, uninstall, clean
+
+  -install: This option is selected by default, and will build and install the application
+  -uninstall: This will uninstall the application
+  -clean: cleans the temporary files created during build
+
+- Now run toueid and check if there is any error in the logs
+  Just hit ctrl+c when you're done (toueid will send SIGTERM to mplayer and
+  touei_run. touei_run does not output anything to the console. You should
+  run a `tail -f` in the log file (default is /tmp/touei_main.log)
+
+- Set whatever script you will use to monitor the status of toueid
+  (The inittab is a good location).
+
+- Enjoy
+
+***** WARNING WARNING ******
+THIS IS A BETA, WE ARE NOT RESPONSABLE IF YOUR MACHINE EXPLODES.
+PLEASE BE AWARE THAT IT IS NOT PRODUCTION READY.
+We hope 0.2 will be.
+
+6) Configuration
 ----------------
 
 Please see the touei.conf.sample for the configuration instruction.
 
 The default location is /etc/touei.conf. You can set a different path
 in the touei_run file (located in /usr/local/bin) but it will break the
-daemon.
+daemon. touei_run can also be run manually if you also start mplayer manually.
 
-6) Reference
+Log file are located in /tmp by default. Be aware that they are deleted at
+reboot. You should change that behavior. I wanted to place them in /var
+but a regular user doesn't have write access.
+
+
+7) Reference
 -----------
 
 Subtitle: http://www.matroska.org/technical/specs/subtitles/ssa.html
