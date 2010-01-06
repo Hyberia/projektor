@@ -21,7 +21,7 @@
 from distutils.core import setup, Extension
 
 setup(name='touei',
-      version='0.1',
+      version='0.2',
       description='Schedule projection system',
       author='G-Anime',
       author_email='projection@sajg.net',
@@ -30,7 +30,7 @@ setup(name='touei',
       #ext_modules=[Extension("libreadconfig", ["readconfig/readconfig.cpp"]),
       #             Extension("toueid", ["toueid/toueid.c"])
       #            ],
-      scripts=['touei_run', 'touei_run'],
+      scripts=['touei_run', 'touei_run', 'touei_deploy', 'touei_deploy'],
       data_files=[('/etc/', ["cfg/touei.conf"]),
                  ],
      )
