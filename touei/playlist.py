@@ -283,7 +283,7 @@ class PlayList():
                     continue
 
                 if schedule[day].has_key(parts[0]):
-                    self.logger.info("Conflict: Filename: " + str(video) + " is in conflict with " + str(schedule[day][parts[0]]))
+                    self.logger.error("Conflict: Filename: " + str(video) + " is in conflict with " + str(schedule[day][parts[0]]))
                 else:
                     title = parts[1].replace('_',' ').strip('[]')
                     file = path + "/" + video

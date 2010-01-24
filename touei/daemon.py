@@ -120,7 +120,7 @@ class ToueiDaemon():
                 self._CurrentVideo = self.video['file']
                 # Create the intro file
                 introVideo = self._MkvUtils.generate_intro(os.path.split(self.video['file'])[1])
-                self.logger.debug("Restoring: Intro video is " + introVideo)
+                self.logger.debug("Intro video is " + introVideo)
 
                 # Check if the video is alive
                 if not self.playerRunning():
@@ -132,6 +132,7 @@ class ToueiDaemon():
                         # Within the sleep timer
                         self.logger.info("Within the loop_sleep time, Playing block")
                         self._Player.openFile(introVideo)
+                        self._Player.openFile(self._CurrentVideo, True)
 
                     # Send the video to player
                     self._Player.openFile(self._CurrentVideo, True)
