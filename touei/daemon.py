@@ -190,16 +190,20 @@ class ToueiDaemon():
             # @TODO Add the seek to restore the video where is was
 
             # Get the delta
-            bDelta = self.secondsDelta(self.video['datetime_start'])
-            if bDelta > self._Config.getint("timing","recovery_time")*2:
-                # We need to seek
-                self.logger.info("Restoring: Over the twice recovery time, seeking")
-                # Send the seek commands
-                self._Player.seek(True, bDelta)
+            if self.video != None:
+                # There is a video playing, restart it.
+                bDelta = self.secondsDelta(self.video['datetime_start'])
+                if bDelta > self._Config.getint("timing","recovery_time")*2:
+                    # We need to seek
+                    self.logger.info("Restoring: Over the twice recovery time, seeking")
+                    # Send the seek commands
+                    self._Player.seek(True, bDelta)
+                else:
+                    # We are within the recovery time, don't seek
+                    self.logger.info("Restoring: Wihin the recovery, doing nothing")
             else:
-                # We are within the recovery time, don't seek
-                self.logger.info("Restoring: Wihin the recovery, doing nothing")
-
+                # do nothing
+                self.logger.debug("Restoring: No video to restore, sleeping.")
         # REMOVED, simply kill touei_run and toueid will restart it and generate
         # The new stuff
         #elif signal == 25:
