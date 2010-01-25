@@ -122,11 +122,12 @@ class ToueiDaemon():
                 introVideo = self._MkvUtils.generate_intro(os.path.split(self.video['file'])[1])
                 self.logger.debug("Intro video is " + introVideo)
 
+                bDelta = self.secondsDelta(self.video['datetime_start'])
+
                 # Check if the video is alive
                 if not self.playerRunning():
                     # Not running, we have to restore the video
                     self.logger.warn("Player was dead, restoring")
-                    bDelta = self.secondsDelta(self.video['datetime_start'])
                     # Check if we want the intro video
                     if bDelta < self._Config.getint("timing", "loop_sleep"):
                         # Within the sleep timer
@@ -154,13 +155,20 @@ class ToueiDaemon():
                     # Recreate the file
                     self.setPlayerRunning()
                 else:
-                    # Player is still alive, do nothing
-                    self.logger.warn("Player is still alive, sleeping")
-
+                    # Player is still alive
+                    self.logger.warn("Player is still alive.")
+                    # Send the video to the player
+                    if bDelta < self._Config.getint("timing", "loop_sleep"):
+                        # Within the sleep timer
+                        self.logger.info("Within the loop_sleep time, Playing block")
+                        self._Player.openFile(introVideo)
+                        self._Player.openFile(self._CurrentVideo, True)
             else:
                 # Nothing to do, video is playing
                 # It could also mean we just went through a _signalCont()
                 self.logger.debug("Still playing, sleeping")
+
+            # Loop is over
             self.logger.debug("Loop ending")
             time.sleep(self._Config.getint("timing", "loop_sleep") )
 
