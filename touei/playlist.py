@@ -94,16 +94,18 @@ class PlayList():
         except Exception,e:
             print e
             return None
+        self.logger.debug("rows = " + str(rows))
         return rows
 
     def get(self):
         """Find a playable file for the current datetime and return it"""
         video = None
         date = self._getFormattedDateTime()
-        self.logger.debug("Formatted Date is " + date)
+        self.logger.debug("date = " + date)
         try:
             cursor = self._db.cursor()
             video = cursor.execute(self._queries['getCurrent'], (date,date)).fetchone()
+            self.logger.debug("video = " + str(video))
         except Exception,e:
             print e
             return False
@@ -221,7 +223,7 @@ class PlayList():
                 title = schedule[date][time]['title']
                 duration = schedule[date][time]['duration']
                 try:
-                    self.logger.debug("ADDING: %s,%s" % (file,title))
+                    self.logger.debug("ADDING: " + str(schedule[date][time]))
                     cursor.execute(self._queries['store'],(datetime_start,datetime_end,file,title,duration,))
                 except Exception,e:
                     print e
@@ -240,8 +242,9 @@ class PlayList():
         """Parses files and prepare them for playback.
         """
         rootDirLen = len(self._rootDir)
+        self.logger.debug("rootDirLen = " + str(rootDirLen))
         presentations = self._getFiles(self._rootDir)
-
+        self.logger.debug("presentations = " + str(presentations))
         if len(presentations.keys()) == 0:
             raise NoFilesException()
 
@@ -249,8 +252,11 @@ class PlayList():
         for path in presentations.keys():
             #Get the relative path from the root dir.
             # rootDirLen + 1 removes the slash between the relative path and the "root"
-            relPath = path[rootDirLen + 1:]
+            self.logger.debug("path = " + str(path))
+            relPath = path[rootDirLen + 0:]
+            self.logger.debug("relPath = " + str(relPath))
             subFolders = relPath.split('/')
+            self.logger.debug("subFolders = " + str(subFolders))
             if len(subFolders) > 1:
                 self.logger.debug("Dropping: " + relPath)
                 self.logger.debug("Reason: Is a subfolder")
@@ -299,7 +305,7 @@ class PlayList():
                     schedule[day][parts[0]] = presentationInfo
                     videoCount += 1
 
-        self.logger.info("PlayList: " + str(videoCount) + " videos.")
+            self.logger.info("" + str(videoCount) + " videos in " + str(path))
         return schedule
 
     def _getFiles(self,dir):

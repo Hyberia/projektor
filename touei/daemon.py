@@ -99,8 +99,9 @@ class ToueiDaemon():
             curTime = self.getCurTime()
             self.video = self._Playlist.get()
             self.logger.debug("Current Video: " + self._CurrentVideo)
+            self.logger.debug("self.video = " + str(self.video))
             #self.logger.debug("Playlist Video: " + video['file'])
-            if not self.video:
+            if self.video == None:
                 # Nothing for current time, Play standby video
                 self.logger.debug("No video for current block")
                 if self._CurrentVideo == self._Config.get("video","standby"):
@@ -129,7 +130,7 @@ class ToueiDaemon():
                     # Not running, we have to restore the video
                     self.logger.warn("Player was dead, restoring")
                     # Check if we want the intro video
-                    if bDelta < self._Config.getint("timing", "loop_sleep"):
+                    if bDelta < self._Config.getint("timing", "loop_sleep") * 2:
                         # Within the sleep timer
                         self.logger.info("Within the loop_sleep time, Playing block")
                         self._Player.openFile(introVideo)
@@ -139,9 +140,9 @@ class ToueiDaemon():
                     self._Player.openFile(self._CurrentVideo, True)
 
                     # Check if we need to seek
-                    if bDelta > self._Config.getint("timing","recovery_time")*2:
+                    if bDelta > self._Config.getint("timing","recovery_time"):
                         # We need to seek
-                        self.logger.info("Over the twice recovery time, seeking")
+                        self.logger.info("Over the recovery time, seeking")
                         # Send the seek commands
                         self._Player.seek(True, bDelta)
                     else:
