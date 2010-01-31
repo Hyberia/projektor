@@ -54,17 +54,19 @@ void signal_handler(int sig) {
             exit(0);
             break;
         case SIGQUIT:
-            kill(rc,SIGQUIT);
+            //kill(rc,SIGQUIT);
+	    system("killall touei_run");
             syslog(LOG_WARNING, "Received SIGQUIT signal.");
             exit(0);
             break;
         case SIGHUP:
-            kill(rc,SIGHUP);
+            //kill(rc,SIGHUP);
+	    system("killall touei_run");
             syslog(LOG_WARNING, "Received SIGHUP signal.");
             exit(0);
             break;
         case SIGTERM:
-            system("kill -SIGTERM `pgrep touei_run`");
+            system("killall touei_run");
             syslog(LOG_WARNING, "Received SIGTERM signal.");
             exit(0);
             break;
@@ -161,7 +163,7 @@ int  main(int argc, char *argv[])
 
     ConfigValue = ReadConfParam(ConfigPath,"slave_socket");
     ConfigValue[strlen(ConfigValue)]='\0';
-    printf("Read config");
+    printf("Read config\n");
 
     //ReadConfParam could not find configuration file
     if( strcmp(ConfigValue,"ERR404")==0)
@@ -173,7 +175,7 @@ int  main(int argc, char *argv[])
 
     //Check if mplayer fifo file exits
     //fifo =fopen(ConfigValue,"r");
-    printf("Creating fifo");
+    printf("Creating fifo\n");
     strcpy(tmpCat,"mkfifo ");
     strcat(tmpCat,ConfigValue);
     system(tmpCat);
