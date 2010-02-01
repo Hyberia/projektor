@@ -49,8 +49,8 @@ Style: texte-en,Trajan Pro,18,&H0084386B,&HFFFFFFFF,&H00FFFFFF,&HFFDDDDE2,-1,0,0
 
 [Events]
 Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:01.00,0:00:15.00,texte-en,,0000,0000,0000,,{\\fad(250,250)}Next Presentation
-Dialogue: 0,0:00:01.00,0:00:15.00,texte-fr,,0000,0000,0000,,{\\fad(250,250)}Prochaine Présentation
+Dialogue: 0,0:00:01.00,0:00:10.00,texte-en,,0000,0000,0000,,{\\fad(250,250)}Next Presentation
+Dialogue: 0,0:00:01.00,0:00:10.00,texte-fr,,0000,0000,0000,,{\\fad(250,250)}Prochaine Présentation
 """
 
 # String replacement use:
@@ -153,7 +153,7 @@ class MkvUtils():
         # Write the header
         assFile.write(ASS_HEADER)
         # Create events
-        assFile.write(self._gen_event(1,14,'title',dispText))
+        assFile.write(self._gen_event(1,9,'title',dispText))
         # Close the file
         assFile.close()
         return 0
