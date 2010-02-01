@@ -253,7 +253,7 @@ class PlayList():
             #Get the relative path from the root dir.
             # rootDirLen + 1 removes the slash between the relative path and the "root"
             self.logger.debug("path = " + str(path))
-            relPath = path[rootDirLen + 0:]
+            relPath = path[rootDirLen + 1:]
             self.logger.debug("relPath = " + str(relPath))
             subFolders = relPath.split('/')
             self.logger.debug("subFolders = " + str(subFolders))

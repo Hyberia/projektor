@@ -55,13 +55,13 @@ void signal_handler(int sig) {
             break;
         case SIGQUIT:
             //kill(rc,SIGQUIT);
-	    system("killall touei_run");
+        system("killall touei_run");
             syslog(LOG_WARNING, "Received SIGQUIT signal.");
             exit(0);
             break;
         case SIGHUP:
             //kill(rc,SIGHUP);
-	    system("killall touei_run");
+        system("killall touei_run");
             syslog(LOG_WARNING, "Received SIGHUP signal.");
             exit(0);
             break;
@@ -201,7 +201,7 @@ int  main(int argc, char *argv[])
     {
         strcpy(tmpCat,"mplayer -idle -slave -quiet -fs -fixed-vo -input file=");
         strcat(tmpCat,ConfigValue);
-        strcat(tmpCat, " 1>> mplayer.out 2>>mplayer.out &");
+        strcat(tmpCat, " 1>> /tmp/mplayer.out 2>>/tmp/mplayer.out &");
         Exec = malloc(strlen(tmpCat)+1);
         strcpy(Exec,tmpCat);
         system(Exec);
@@ -218,7 +218,7 @@ int  main(int argc, char *argv[])
     if((kill(rc,0)!=0) || rc==-1)
     {
         strcpy(tmpCat, CurrentPath);
-        strcat(tmpCat,"touei_run  >> touei_run.out &");
+        strcat(tmpCat,"touei_run  >> /tmp/touei_run.out &");
         system( tmpCat);
         tmpCat[0]='\0';
     }

@@ -1,74 +1,43 @@
+[default]
 # Write your default config options here!
+# Set video driver.
+#vo=xv
+zoom=1
 
-# Output
+# Set audio driver
 ao="alsa:device=ladcomp"
-vo="xv"
 
-# Display
-double="yes"
-
-framedrop="1"
-
-autoq=90
-
-ontop="1"
-
-stop-xscreensaver="yes"
-
-fs="yes"
-
-#loop=0
-
-#==========
-# Subtitles
-#==========
-
-# VobSubs
-#========
-
-# Align subs. (-1: as they want to align themselves)
-spualign=-1
-
-# Anti-alias subs. (4: best and slowest)
-spuaa=4
+# Use double-buffering.
+double=yes
 
 # Set language.
-slang=fi,fin,en,eng
-
-# Text-based subtitles
-#=====================
-
-# Find subtitle files. (1: load all subs containing movie name)
-sub-fuzziness=1
-
-# Set font.
-font=/home/osmo/.fonts/microsoft/vista/Calibri.ttf
-
-# Set font encoding.
-subfont-encoding=unicode
+slang=en,eng,fr,fra
 
 # Set subtitle file encoding.
 unicode=yes
 utf8=yes
+ass=yes
 
-# Resample the font alphamap. (1: narrow black outline)
-ffactor=1
+# Find subtitle files. (1: load all subs containing movie name)
+sub-fuzziness=1
 
-# Set subtitle position. (100: as low as possible)
-subpos=100
+#double buffering(recommended for subtitles)
+double="yes"
 
-# Set subtitle alignment at its position. (2: bottom)
-subalign=2
+#I'm on a widescreen laptop so keeps 4:3 content from stretching
+#monitoraspect="16:9"
+#aspect="16:9"
 
-# Set font size. (2: proportional to movie width)
-subfont-autoscale=2
+# For slow machines
+framedrop="1"
+autoq=90
 
-# Set font blur radius. (default: 2)
-subfont-blur=2.0
+# Force the player to be on top and fullscreen
+ontop="1"
+fs="yes"
 
-# Set font outline thickness. (default: 2)
-subfont-outline=2.0
+# Stop the screensaver (probably not working but anyway.
+stop-xscreensaver="yes"
 
-# Set autoscale coefficient. (default: 5)
-subfont-text-scale=4.4
-
+#Make sure hard frame drop is off but can turn on easily now
+hardframedrop="0"
