@@ -203,11 +203,11 @@ class ToueiDaemon():
             if self.video != None:
                 # There is a video playing, restart it.
                 bDelta = self.secondsDelta(self.video['datetime_start'])
-                if bDelta > self._Config.getint("timing","recovery_time")*2:
+                if bDelta > self._Config.getint("timing","recovery_time"):
                     # We need to seek
-                    self.logger.info("Restoring: Over the twice recovery time, seeking")
+                    self.logger.info("Restoring: Over the recovery time, seeking")
                     # Send the seek commands
-                    self._Player.seek(True, bDelta)
+                    self._Player.seek(True, bDelta - self._Config.getint("timing","recovery_time"))
                 else:
                     # We are within the recovery time, don't seek
                     self.logger.info("Restoring: Wihin the recovery, doing nothing")
