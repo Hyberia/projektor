@@ -1,6 +1,5 @@
 # Created by : Jamie Nadeau
-# Version    : 0.1
-# Revision   : 36
+# Version    : 0.2.1
 
 CC = g++
 MODULES= readconfig.o ReadConfigLib.o

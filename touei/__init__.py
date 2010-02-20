@@ -26,8 +26,7 @@ Anime Convention
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.2"
-__revision__ = "47"
+__version__ = "0.2.1"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 __all__ = ["player", "playlist", "mkvutils", "daemon"]
@@ -38,7 +37,7 @@ CONFIG_DEFAULT_VALUE={"pid": "/var/pid/touei.pid",
                       "main_log": "/tmp/touei_main.log",
                       "debug_level": "20",
                       "seek_delay": "2",
-                      "recovery_time": "70",
+                      "recovery_time": "30",
                       "block_duration": "60",
                       "loop_sleep": "10",
                       "location": "/home/video",

@@ -28,29 +28,28 @@ please see http://elwillow.net/touei for more info.
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.2"
-__revision__ = "47"
+__version__ = "0.2.1"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 # Editing the following will affect all ASS file generated within this
 # script.
 ASS_HEADER = """[Script Info]
-; This script was created by subtitleeditor (0.30.0)
-; http://home.gna.org/subtitleeditor/
-; Note: This file was saved by Subresync.
-; This file was create automaticly by Touei
+; This script was created by touei %s
+; http://elwillow.net/touei
 ScriptType: V4.00+
 Timer: 100.0000
 
-Collisions: Normal
-
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: default,DejaVu Sans,18,&H000000E8,&H00FFFFFF,&H00000000,&H7ADDDDE2,-1,0,0,0,100,100,0,0,1,1,1,2,20,20,20,1
-Style: top,DejaVu Sans,18,&H000000E8,&H00FFFFFF,&H00000000,&H7FDDDDE2,-1,0,0,0,100,100,0,0,1,1,1,7,20,20,20,0
+Style: Title,Trajan Pro,24,&H0084386B,&HFFFFFFFF,&H00FFFFFF,&HFFDDDDE2,-1,0,0,0,100,100,0,0,1,1,0,1,20,25,20,0
+Style: texte-fr,Trajan Pro,22,&H0084386B,&HFFFFFFFF,&H00FFFFFF,&HFFDDDDE2,-1,0,0,0,100,100,0,0,1,1,0,1,20,20,100,0
+Style: texte-en,Trajan Pro,18,&H0084386B,&HFFFFFFFF,&H00FFFFFF,&HFFDDDDE2,-1,0,0,0,100,100,0,0,1,1,0,1,30,20,100,0
+
 [Events]
 Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text
-"""
+Dialogue: 0,0:00:01.00,0:00:10.00,texte-en,,0000,0000,0000,,{\\fad(250,250)}Next Presentation
+Dialogue: 0,0:00:01.00,0:00:10.00,texte-fr,,0000,0000,0000,,{\\fad(250,250)}Prochaine Présentation
+""" % (__version__)
 
 # String replacement use:
 # first: Start time (0:00:00.00)
@@ -152,9 +151,7 @@ class MkvUtils():
         # Write the header
         assFile.write(ASS_HEADER)
         # Create events
-        assFile.write(self._gen_event(0,6,'top',"Sponsored by Magmic Games"))
-        assFile.write(self._gen_event(1,3,'default',"Next Presentation: " + dispText))
-        assFile.write(self._gen_event(4,3,'default',"Prochaine Presentation: " + dispText))
+        assFile.write(self._gen_event(1,9,'title',dispText))
         # Close the file
         assFile.close()
         return 0

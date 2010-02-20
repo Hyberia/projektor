@@ -1,8 +1,7 @@
 touei README
 ============
 
-Version  : 0.1
-Revision : 43
+Version  : 0.2.1
 
 1) Authors and thanks
 ---------------------
@@ -83,6 +82,8 @@ will be:
 
    1545.Higurashi_no_Naku_Koro_ni.mkv
 
+DO NOT PUT SPECIAL CHARACTERS IN THE FILENAME, PARSING WILL BREAK
+
 ** File structure **
 
 The file structure is simple, inside the folder in the LOCATION config
@@ -105,8 +106,8 @@ Until there is a better way to install this setup, follow these instructions:
 - Execute as root:
     ./install.sh
   It will build and install toueid and readconfig then execute setup.py.
-  
-  This accepts the fallowing arguments: install, uninstall, clean
+
+  This accepts the following arguments: install, uninstall, clean
 
   -install: This option is selected by default, and will build and install the application
   -uninstall: This will uninstall the application
@@ -123,14 +124,14 @@ Until there is a better way to install this setup, follow these instructions:
 - Enjoy
 
 ***** WARNING WARNING ******
-THIS IS A BETA, WE ARE NOT RESPONSABLE IF YOUR MACHINE EXPLODES.
-PLEASE BE AWARE THAT IT IS NOT PRODUCTION READY.
-We hope 0.2 will be.
+THIS IS A EARLY RELEASE, WE ARE NOT RESPONSABLE IF YOUR MACHINE EXPLODES.
+PLEASE BE AWARE THAT IT IS SOMEWHAT PRODUCTION READY.
+We hope 0.4 will be stable enough for real deployment.
 
 6) Configuration
 ----------------
 
-Please see the touei.conf.sample for the configuration instruction.
+Please see the touei.conf for the configuration instruction.
 
 The default location is /etc/touei.conf. You can set a different path
 in the touei_run file (located in /usr/local/bin) but it will break the
@@ -142,10 +143,13 @@ but a regular user doesn't have write access.
 
 
 7) Reference
------------
+------------
 
 Subtitle: http://www.matroska.org/technical/specs/subtitles/ssa.html
 Video Container: http://www.matroska.org/node/46
 
+8) Todo
+-------
 
-# EOF
+* Add support for unicode
+* change behavior to support the .xinitrc setup

@@ -21,7 +21,7 @@
 from distutils.core import setup, Extension
 
 setup(name='touei',
-      version='0.2',
+      version='0.2.1',
       description='Schedule projection system',
       author='G-Anime',
       author_email='projection@sajg.net',

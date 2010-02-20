@@ -25,8 +25,7 @@ please see http://elwillow.net/touei for more info.
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.2"
-__revision__ = "47"
+__version__ = "0.2.1"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 import time, signal, datetime, os
@@ -99,8 +98,9 @@ class ToueiDaemon():
             curTime = self.getCurTime()
             self.video = self._Playlist.get()
             self.logger.debug("Current Video: " + self._CurrentVideo)
+            self.logger.debug("self.video = " + str(self.video))
             #self.logger.debug("Playlist Video: " + video['file'])
-            if not self.video:
+            if self.video == None:
                 # Nothing for current time, Play standby video
                 self.logger.debug("No video for current block")
                 if self._CurrentVideo == self._Config.get("video","standby"):
@@ -120,26 +120,28 @@ class ToueiDaemon():
                 self._CurrentVideo = self.video['file']
                 # Create the intro file
                 introVideo = self._MkvUtils.generate_intro(os.path.split(self.video['file'])[1])
-                self.logger.debug("Restoring: Intro video is " + introVideo)
+                self.logger.debug("Intro video is " + introVideo)
+
+                bDelta = self.secondsDelta(self.video['datetime_start'])
 
                 # Check if the video is alive
                 if not self.playerRunning():
                     # Not running, we have to restore the video
                     self.logger.warn("Player was dead, restoring")
-                    bDelta = self.secondsDelta(self.video['datetime_start'])
                     # Check if we want the intro video
-                    if bDelta < self._Config.getint("timing", "loop_sleep"):
+                    if bDelta < self._Config.getint("timing", "loop_sleep") * 2:
                         # Within the sleep timer
                         self.logger.info("Within the loop_sleep time, Playing block")
                         self._Player.openFile(introVideo)
+                        self._Player.openFile(self._CurrentVideo, True)
 
                     # Send the video to player
                     self._Player.openFile(self._CurrentVideo, True)
 
                     # Check if we need to seek
-                    if bDelta > self._Config.getint("timing","recovery_time")*2:
+                    if bDelta > self._Config.getint("timing","recovery_time"):
                         # We need to seek
-                        self.logger.info("Over the twice recovery time, seeking")
+                        self.logger.info("Over the recovery time, seeking")
                         # Send the seek commands
                         self._Player.seek(True, bDelta)
                     else:
@@ -153,13 +155,20 @@ class ToueiDaemon():
                     # Recreate the file
                     self.setPlayerRunning()
                 else:
-                    # Player is still alive, do nothing
-                    self.logger.warn("Player is still alive, sleeping")
-
+                    # Player is still alive
+                    self.logger.warn("Player is still alive.")
+                    # Send the video to the player
+                    if bDelta < self._Config.getint("timing", "loop_sleep"):
+                        # Within the sleep timer
+                        self.logger.info("Within the loop_sleep time, Playing block")
+                        self._Player.openFile(introVideo)
+                        self._Player.openFile(self._CurrentVideo, True)
             else:
                 # Nothing to do, video is playing
                 # It could also mean we just went through a _signalCont()
                 self.logger.debug("Still playing, sleeping")
+
+            # Loop is over
             self.logger.debug("Loop ending")
             time.sleep(self._Config.getint("timing", "loop_sleep") )
 
@@ -190,16 +199,20 @@ class ToueiDaemon():
             # @TODO Add the seek to restore the video where is was
 
             # Get the delta
-            bDelta = self.secondsDelta(self.video['datetime_start'])
-            if bDelta > self._Config.getint("timing","recovery_time")*2:
-                # We need to seek
-                self.logger.info("Restoring: Over the twice recovery time, seeking")
-                # Send the seek commands
-                self._Player.seek(True, bDelta)
+            if self.video != None:
+                # There is a video playing, restart it.
+                bDelta = self.secondsDelta(self.video['datetime_start'])
+                if bDelta > self._Config.getint("timing","recovery_time"):
+                    # We need to seek
+                    self.logger.info("Restoring: Over the recovery time, seeking")
+                    # Send the seek commands
+                    self._Player.seek(True, bDelta - self._Config.getint("timing","recovery_time"))
+                else:
+                    # We are within the recovery time, don't seek
+                    self.logger.info("Restoring: Wihin the recovery, doing nothing")
             else:
-                # We are within the recovery time, don't seek
-                self.logger.info("Restoring: Wihin the recovery, doing nothing")
-
+                # do nothing
+                self.logger.debug("Restoring: No video to restore, sleeping.")
         # REMOVED, simply kill touei_run and toueid will restart it and generate
         # The new stuff
         #elif signal == 25:

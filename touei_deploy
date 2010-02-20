@@ -19,6 +19,12 @@
 # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 """Generate a metalink for easy download to the screen PC"""
+
+__author__ = "G-Anime"
+__license__ = "Eiffel Version 2"
+__version__ = "0.2.1"
+__contributors__= "Mathieu Charron"
+
 ##
 ## Configuration
 ##

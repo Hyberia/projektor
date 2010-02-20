@@ -25,8 +25,7 @@ Main script for the Touei project. Need the Touei modules.
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.2"
-__revision__ = "47"
+__version__ = "0.2.1"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 # Set this to your configuration file.
