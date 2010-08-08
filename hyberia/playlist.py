@@ -20,8 +20,8 @@
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
 """
-this is the Playlist module part of the Touei project.
-please see http://elwillow.net/touei for more info.
+this is the Playlist module part of the HYBERIA project.
+please see http://hyberia.org for more info.
 """
 
 __author__ = "G-Anime"
@@ -35,7 +35,7 @@ import os,sys,datetime
 
 # Instanciate the logging
 import logging
-module_logger = logging.getLogger("touei.playlist")
+module_logger = logging.getLogger("hyberia.playlist")
 
 class DBUnavailableException(Exception): pass
 class DBExistsException(Exception): pass
@@ -45,7 +45,7 @@ class NoFilesException(Exception): pass
 class PlayList():
     def __init__(self, mkv):
         # Instanciate the logger
-        self.logger = logging.getLogger("touei.playlist.Playlist")
+        self.logger = logging.getLogger("hyberia.playlist.Playlist")
         self.logger.info("Creating instance")
 
         self._MkvUtils = mkv

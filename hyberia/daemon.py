@@ -19,13 +19,13 @@
 # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 """
-this is the deamon module part of the Touei project.
-please see http://elwillow.net/touei for more info.
+this is the deamon module part of the HYBERIA project.
+please see http://hyberia.org for more info.
 """
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.2.1"
+__version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 import time, signal, datetime, os
@@ -33,15 +33,15 @@ import mkvutils
 
 # Instanciate the logging
 import logging
-module_logger = logging.getLogger("touei.daemon")
+module_logger = logging.getLogger("hyberia.daemon")
 
-class ToueiDaemon():
+class HyberiaDaemon():
     """This class provide a way to keep the video database in memory and
     a fast way of checking witch video to play.
     """
     def __init__(self, playlist, player, config, mkv):
         # Instanciate the logger
-        self.logger = logging.getLogger("touei.daemon.ToueiDaemon")
+        self.logger = logging.getLogger("hyberia.daemon.HyberiaDaemon")
         self.logger.info("Creating instance")
 
         signal.signal (signal.SIGTERM, self._signalTerm)
@@ -223,5 +223,5 @@ class ToueiDaemon():
 
 if __name__ == "__main__":
     print "##### DEBUG ######"
-    d = ToueiDaemon()
+    d = HyberiaDaemon()
     d.run()

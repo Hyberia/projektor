@@ -31,7 +31,7 @@ import sys,os
 
 # Instanciate the logging
 import logging
-module_logger = logging.getLogger("touei.player")
+module_logger = logging.getLogger("hyberia.player")
 
 class SocketLocationException(Exception): pass
 class SocketException(Exception): pass
@@ -47,7 +47,7 @@ class PlayerInterface():
         """
 
         # Instanciate the logger
-        self.logger = logging.getLogger("touei.player.PlayerInterface")
+        self.logger = logging.getLogger("hyberia.player.PlayerInterface")
         self.logger.info("Creating instance")
 
         if not socketLocation:

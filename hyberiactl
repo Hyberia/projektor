@@ -20,17 +20,17 @@
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
 """
-Main script for the Touei project. Need the Touei modules.
+Control script for HYBERIA projection system. Need the hyberia modules.
 """
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.2.1"
+__version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 # Set this to your configuration file.
-# default is /etc/touei.conf
-CONFIG_FILE = "/etc/touei.conf"
+# default is /etc/hyberia.conf
+CONFIG_FILE = "/etc/hyberia.conf"
 # ALL OTHER CONFIGURATION ARE DONE IN THIS FILE.
 
 
@@ -46,13 +46,13 @@ import time
 import os
 import sys
 # @TODO Something is fishy.
-import touei
-from touei import *
+import hyberia
+from hyberia import *
 
 
 if __name__ == "__main__":
     # Create the configParser instance
-    config = ConfigParser.SafeConfigParser(touei.CONFIG_DEFAULT_VALUE)
+    config = ConfigParser.SafeConfigParser(hyberia.CONFIG_DEFAULT_VALUE)
     #print config
     # Check if the config file exists:
     if os.path.exists(CONFIG_FILE):
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     else: print "Cannot load config"
 
     # Create Logger
-    logger = logging.getLogger("touei")
+    logger = logging.getLogger("hyberia")
     logger.setLevel(config.getint('logs', 'debug_level'))
 
     # Create file handler
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     player = player.PlayerInterface(config.get("core", "slave_socket"))
 
     # Call the daemon
-    daemon = daemon.ToueiDaemon(playlist, player, config, mkv)
+    daemon = daemon.HyberiaDeamon(playlist, player, config, mkv)
     # Enter the loop
     daemon.run()
 

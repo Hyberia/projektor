@@ -22,7 +22,7 @@
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.2.1"
+__version__ = "0.3.2"
 __contributors__= "Mathieu Charron"
 
 ##
@@ -39,7 +39,7 @@ port=8000
 metalink_header="""<?xml version="1.0" encoding="UTF-8"?>
 <metalink version="3.0"
   xmlns="http://www.metalinker.org/"
-  generator="http://projects.elwillow.net/touei:server/"
+  generator="http://hyberia.org/deploy/"
   >
 <files>
 """

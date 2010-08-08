@@ -20,28 +20,28 @@
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
 """
-Touei is a Projection management controller for projection room at an
-Anime Convention
+HYBERIA Projection System manage & control the video playback for a
+projection room at an Anime Convention
 """
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.2.1"
+__version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 __all__ = ["player", "playlist", "mkvutils", "daemon"]
 
-CONFIG_DEFAULT_VALUE={"pid": "/var/pid/touei.pid",
-                      "slave_socket": "/tmp/touei_slave.fifo",
-                      "deamon_log": "/tmp/touei_deamon.log",
-                      "main_log": "/tmp/touei_main.log",
+CONFIG_DEFAULT_VALUE={"pid": "/var/pid/hyberia.pid",
+                      "slave_socket": "/tmp/hyberia_slave.fifo",
+                      "deamon_log": "/tmp/hyberia_deamon.log",
+                      "main_log": "/tmp/hyberia_main.log",
                       "debug_level": "20",
                       "seek_delay": "2",
                       "recovery_time": "30",
                       "block_duration": "60",
                       "loop_sleep": "10",
                       "location": "/home/video",
-                      "tmp-location": "/tmp/touei",
+                      "tmp-location": "/tmp/hyberia",
                       "recovery": "/home/video/recovery.mkv",
                       "standby": "/home/video/standby.mkv",
                       "intro": "/home/video/intro.mkv",

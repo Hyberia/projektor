@@ -20,22 +20,22 @@
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
 """
-this is the mkvutils module part of the Touei project.
+this is the mkvutils module part of the HYBERIA project.
 This module do some sanity check before muxing the mkv. It also
 control the creation of the subtitle file.
-please see http://elwillow.net/touei for more info.
+please see http://hyberia.org for more info.
 """
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.2.1"
+__version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 # Editing the following will affect all ASS file generated within this
 # script.
 ASS_HEADER = """[Script Info]
-; This script was created by touei %s
-; http://elwillow.net/touei
+; This script was created by HYBERIA %s
+; http://hyberia.org
 ScriptType: V4.00+
 Timer: 100.0000
 
@@ -61,13 +61,13 @@ import subprocess,re, os
 
 # Instanciate the logging
 import logging
-module_logger = logging.getLogger("touei.mkvutils")
+module_logger = logging.getLogger("hyberia.mkvutils")
 
 class MkvUtils():
 
     def __init__(self, config):
         # Instanciate the logger
-        self.logger = logging.getLogger("touei.mkvutils.MkvUtils")
+        self.logger = logging.getLogger("hyberia.mkvutils.MkvUtils")
         self.logger.info("Creating instance")
 
         self._Config = config
@@ -219,8 +219,8 @@ if __name__ == "__main__":
     # importation
     import os
     # Temporary config value for debug
-    debug_config_tmp = "/tmp/touei"
-    debug_config_intro = "/home/elwillow/workspace/Touei/intro.mkv"
+    debug_config_tmp = "/tmp/hyberia"
+    debug_config_intro = "/home/elwillow/workspace/Hyberia/intro.mkv"
 
     mkv = MkvUtils("a")
     #print mkv._gen_event(3,2,"Top","TESTING A EVENT LINE!")

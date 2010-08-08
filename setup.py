@@ -20,17 +20,14 @@
 # DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 from distutils.core import setup, Extension
 
-setup(name='touei',
-      version='0.2.1',
+setup(name='hyberia',
+      version='0.3.2',
       description='Schedule projection system',
       author='G-Anime',
-      author_email='projection@sajg.net',
-      url='http://elwillow.net/touei',
-      packages=['touei'],
-      #ext_modules=[Extension("libreadconfig", ["readconfig/readconfig.cpp"]),
-      #             Extension("toueid", ["toueid/toueid.c"])
-      #            ],
-      scripts=['touei_run', 'touei_run', 'touei_deploy', 'touei_deploy'],
-      data_files=[('/etc/', ["cfg/touei.conf"]),
+      author_email='mathieu@hyberia.org',
+      url='http://hyberia.org',
+      packages=['hyberia'],
+      scripts=['hyberiactl', 'hyberiactl', 'hyberia_deploy', 'hyberia_deploy'],
+      data_files=[('/etc/', ["cfg/hyberia.conf"]),
                  ],
      )
