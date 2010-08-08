@@ -1,9 +1,9 @@
 #!/bin/bash
 # Author:      G-Anime
 # Contributor: Mathieu Charron, Jamie Nadeau
-# Version:     0.2.1
+# Version:     0.3.2
 #
-# Copyright 2008, G-Anime, sajg.net
+# Copyright 2008, G-Anime, hyberia.org
 # Licensed under the Eiffel Forum License 2.
 
 # make sure we're running as root
@@ -23,61 +23,25 @@ fi
 
 case "$COMMAND" in
 'install')
-    echo "Building libReadToueiConfig"
-    cd readconfig
-    make
-
-    echo "Installing libReadToueiConfig"
-    make $COMMAND
-    cd ..
-
-    echo "Building toueid"
-    cd toueid
-    make
-
-    echo "Installing toueid"
-    make $COMMAND
-    cd ..
-
-    echo "Installing touei"
+    echo "Installing HYBERIA"
     python setup.py $COMMAND --record uninstall.db
 
     echo "Copying support files"
-    mkdir /usr/share/fonts/touei
-    cp misc/*.otf /usr/share/fonts/touei/
+    mkdir /usr/share/fonts/hyberia
+    cp misc/*.otf /usr/share/fonts/hyberia/
 
 #end of install
 ;;
 'uninstall')
-    echo "Uninstalling libReadToueiConfig"
-    cd readconfig
-    make $COMMAND
-    cd ..
-
-    echo "Uninstalling toueid"
-    cd toueid
-    make $COMMAND
-    cd ..
-
-    echo "Uninstalling touei"
+    echo "Uninstalling HYBERIA"
     cat uninstall.db | xargs rm -rf
 
     echo "Cleaning support files"
-    rm -rf /usr/share/fonts/touei
+    rm -rf /usr/share/fonts/hyberia
 
 #end uninstall
 ;;
 'clean')
-    echo "Cleaning libReadToueiConfig"
-    cd readconfig
-    make $COMMAND
-    cd ..
-
-    echo "Cleaning toueid"
-    cd toueid
-    make $COMMAND
-    cd ..
-
     echo "Cleaning touei"
     python setup.py $COMMAND
 
