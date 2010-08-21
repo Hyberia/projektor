@@ -45,6 +45,7 @@ import ConfigParser
 import time
 import os
 import sys
+import yaml
 # @TODO Something is fishy.
 import hyberia
 from hyberia import *
@@ -72,10 +73,11 @@ if __name__ == "__main__":
     fh = logging.FileHandler(config.get('logs','main_log'))
 
     # Create the console logging if debug level is 10
-    if config.get("logs", "debug_level") == 10:
+    if config.getint("logs", "debug_level") == 10:
         ch = logging.StreamHandler()
         cformatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
         ch.setFormatter(cformatter)
+        fh.setLevel(logging.INFO)
         logger.addHandler(ch)
 
     # Set formating
@@ -88,6 +90,11 @@ if __name__ == "__main__":
     # Do some sanity check before starting the system
     # @TODO There is no check for permission
     logger.info("======= NEW INSTANCE =======")
+    if config.getint("logs", "debug_level") == 10:
+        logger.debug("RUNNING IN DEBUG")
+    # Load YAML playlist file
+    plsStream = file(config.get('video', 'location')+"playlist.yaml", 'r')
+    playlistYaml = yaml.load(plsStream)
     logger.info("Begin sanity check")
     # Check: video, location
     if not os.path.isdir(config.get('video', 'location')):
@@ -96,7 +103,7 @@ if __name__ == "__main__":
     else:
         logger.debug("Video location %s is usable" % (config.get("video", "location"), ))
 
-    # Check: video, intro
+    # Video check
     if not os.path.exists(config.get("video", "intro")):
         logger.critical("Can't open intro video at %s" % (config.get('video', 'intro'), ))
         exit(1)
