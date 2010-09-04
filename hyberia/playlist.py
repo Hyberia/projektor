@@ -67,13 +67,13 @@ class PlayList():
             raise PlayListVIBNotSetException()
             
         self.__videoInfoBackend = videoInfoBackend
-        self._playList = {}
+        self._playList = []
         
     def __createBlock(self, runDate = 0, runTime = 0, name = "DefaultBlockName" , description = ""):
         block = {}
-        block['runDate'] = runDate
-        block['runTime'] = runTime
-        block['totalDuration'] = 0
+        block['runDate'] = int(runDate)
+        block['runTime'] = int(runTime)
+        block['totalRunTime'] = 0
         block['name'] = name
         block['description'] = description
         block['parts'] = []
@@ -94,10 +94,15 @@ class PlayList():
         return part
     
     def load(self, playListFile):
+        '''Load the playlist file into memory'''
+        
+        
+        #Verify the playlist file exists
         if not os.path.exists(playListFile):
             self.logger.critical("Playlist file not found.");
             raise PlayListNotFoundException()
         
+        #Attempt to parse the playlist file
         try:
             playListStruct = json.load(open(playListFile, "r"))
         except Exception as e:
@@ -105,15 +110,21 @@ class PlayList():
             print("This is a parsing error. Strings in json must be delimited with \" instead of ' ")
             raise PlayListImportErrorException()
         
+        #Verify that some data exists
         for elem in ["blocks","resources"]:
             if not elem in playListStruct:
                 print(elem + " not found")
                 raise PlayListImportErrorException()
 
         
+        #Parse the resources
         for resource in playListStruct['resources']:
             if not 'file' in playListStruct['resources'][resource]:
                 print("CRITICAL: Resource "+ str(resource) +" has no file attribute");
+                raise PlayListImportErrorException()
+            
+            if not 'file' in playListStruct['resources'][resource]:
+                print("CRITICAL: Resource "+ resource +" does not have a file attribute!")
                 raise PlayListImportErrorException()
                 
             if not os.path.exists(playListStruct['resources'][resource]['file']):
@@ -123,57 +134,58 @@ class PlayList():
                 
                 
         for dateBlock in playListStruct["blocks"]:
-            if self._playList.has_key(dateBlock):
-                print("ERROR: Duplicate date blocks")
-                raise PlayListImportErrorException()
             
             prev_block_id = 0
             
             for timeBlock in playListStruct["blocks"][dateBlock]:
                 blockStruct = playListStruct["blocks"][dateBlock][timeBlock]
                 
+                if len(blockStruct['parts']) == 0:
+                    print("WARNING: Skipping block " + str(timeBlock) + " on " + str(dateBlock) + ". No parts to play")
+                    continue
+                
+                for item in ['name','description', 'parts']:
+                    if not item in blockStruct:
+                        print ("CRITICAL: Block " + timeBlock +" on " + dateBlock +" does not have a " + item + "!")
+                        raise PlayListImportErrorException()
+                    
                 block = self.__createBlock(dateBlock,timeBlock,blockStruct["name"],blockStruct["description"])
                 for part in blockStruct['parts']:
-                    part = self.__createPart(part)
+                    
+                    if not part in playListStruct['resources']:
+                        print("CRITICAL: Part " + str(part) + " has no resource file!")
+                        raise PlayListImportErrorException()
+                    
+                    resource = playListStruct['resources'][part]
+                    part = self.__createPart(resource)
                     block['parts'].append(part)
                     block['totalRunTime'] += part['duration']
                 
-                blockId = dateBlock * 1000 + timeBlock
+                blockId = (int(dateBlock) * 10000) + int(timeBlock)
+
                 if prev_block_id > blockId:
                     print("Critical: Block duration overlapping at " + str(blockId))
                     raise PlayListImportErrorException()
-                self._playList[blockId].append(block)
-                
-        print repr(self._playList);
+                self._playList.append(block)
+        print ("INFO: Loaded " + str(len(self._playList)) + " blocks.")        
+        self._playList.sort()
 
+    def getCurrentBlock(self):
+        curTimeId = self._getFormattedDateTime()
+        
+        for blockId in self._playList:
+            if blockId < curTimeId:
+                continue
+            
+            #Prevent giving a block for a different day
+            if int(blockId / 10000) > int(curTimeId / 10000):
+                return None
+            
+            return self._playList[blockId]
+        return None
+            
     def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
         return datetime.datetime.now().strftime(format)
-
-    def _getFormattedTime(self):
-        return datetime.datetime.now().strftime("%H%M")
-
-    def _getCurDay(self):
-        return datetime.datetime.now().strftime("%d");
-
-    def _getFormattedDate(self, format = "%Y%m%d"):
-        return datetime.datetime.now().strftime(format)
-
-    def _getFiles(self,dir):
-        """Get all the mkv files from dir (and bellow)
-        """
-        videos = {}
-        for path, dirs, files in os.walk(dir,True,None,True):
-
-            for file in files:
-                if not file.endswith('.mkv'):
-                    continue
-
-                if not path in videos.keys():
-                    videos[path] = []
-
-                videos[path].append(file)
-
-        return videos
 
 if __name__ == "__main__":
     print "##### DEBUG ######"
@@ -181,9 +193,4 @@ if __name__ == "__main__":
     m = mkvutils.MkvUtils()
     p = PlayList(m)
     p.load('../cfg/playlist.json')
-    
-    print p._getFormattedDateTime()
-    print "playlist", p.getPlayList()
-    print "get", p.get()
-    print "getNext", p.getNext()
-    print "getPrevious", p.getPrevious()
+    print "get", p.getCurrentBlock()
