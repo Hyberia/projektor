@@ -42,7 +42,7 @@ case "$COMMAND" in
 #end uninstall
 ;;
 'clean')
-    echo "Cleaning touei"
+    echo "Cleaning HYBERIA"
     python setup.py $COMMAND
 
 ;;

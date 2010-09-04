@@ -46,8 +46,14 @@ class HyberiaDaemon():
         self.logger.info("Creating instance")
 
         signal.signal (signal.SIGTERM, self._signalTerm)
+        signal.signal (signal.SIGINT, self._signalTerm)
+        
+        #Shouldn't sighup raise a "refresh playlist" event or refresh what is currently playing?
         signal.signal (signal.SIGHUP, self._signalTerm)
+        
         signal.signal (signal.SIGCONT, self._signalCont)
+       
+        
         self._isRunning = True
         self._Playlist = playlist
         self._Player = player
@@ -72,11 +78,6 @@ class HyberiaDaemon():
         if not self.playerRunning():
             open(self._Config.get("core","tmp-location")+"/player_running", "w").close()
 
-    def getCurTime(self):
-        """Return the current time with the block format.
-        """
-        return datetime.datetime.now().strftime("%H%M")
-
     def secondsDelta(self, blockStart):
         """Return the number of seconds since the begining of the current block
         @param string blockStart
@@ -96,7 +97,7 @@ class HyberiaDaemon():
         # For logging purposes
         while(self._isRunning):
             self.logger.info("Entering Loop at %s" % (datetime.datetime.now().strftime("%H%M.%S"),))
-            curTime = self.getCurTime()
+
             self.video = self._Playlist.get()
             self.logger.debug("Current Video: " + self._CurrentVideo)
             self.logger.debug("self.video = " + str(self.video))
