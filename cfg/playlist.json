@@ -1,34 +1,45 @@
-%YAML 1.1
----
-sponsors:
-    &S1 sponsor_01:
-        name: ADV Films,
-        file: adv_sponsorship
-    &S2 sponsor_02:
-        name: Geneon Entertainment,
-        file: adv_sponsorship
-    &S3 sponsor_03:
-        name: Pioneer Entertainment,
-        file: adv_sponsorship
-
-resources:
-    intro: intro.v1
-    outro: outro.v2
-
-blocks:
-    02-31:
-        2200:
-            name: BLBLALBALB
-            descrption:
-            parts:
-                - sponsor_01
-                - evangelion_01
-                - sponsor_01
-                - evangelion_02
-                - sponsor_02
-        2300:
-            - sponsor_01
-            - nana_01
-            - sponsor_01
-            - nano_02
-            - *S3
+{"sponsors": {
+    "sponsor_01" : {
+        "name": "ADV Films",
+        "file": "adv_sponsorship.avi"
+    },
+    "sponsor_02": {
+        "name": "Geneon Entertainment",
+        "file": "adv_sponsorship.avi"
+    }
+ },
+ "resources": {
+    "intro": "intro.v1",
+    "outro": "outro.v2"
+ },
+ "blocks":{
+    "20100231":{
+        "2200": {
+            "name" : "Evangelion",
+            "description": "Evangelion TV serie remastered",
+            "parts": [
+                "sponsor_01",
+                "evangelion_01",
+                "sponsor_02",
+                "evangelion_02",
+                "sponsor_01",
+                "evangelion_03",
+                "sponsor_01"
+            ]
+        },
+        "2300": {
+            "name" : "Nana",
+            "description": "Nana TV serie",
+            "parts": [
+                "sponsor_01",
+                "nana_01",
+                "sponsor_02",
+                "nana_02",
+                "sponsor_01",
+                "nana_03",
+                "sponsor_01"
+            ]
+        }
+    }
+ }
+}

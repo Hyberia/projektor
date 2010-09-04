@@ -67,7 +67,8 @@ class PlayList():
             raise PlayListVIBNotSetException()
             
         self.__videoInfoBackend = videoInfoBackend
-
+        self._playList = {}
+        
     def __createBlock(self, runDate = 0, runTime = 0, name = "DefaultBlockName" , description = ""):
         block = {}
         block['runDate'] = runDate
@@ -93,16 +94,28 @@ class PlayList():
         part['playAt'] = 0
         return part
     
-    def load(self, playlistFile):
-        if not os.path.exists(playlistFile):
+    def load(self, playListFile):
+        if not os.path.exists(playListFile):
             self.logger.critical("Playlist file not found.");
             raise PlayListNotFoundException()
         
         try:
-            print json.load(os.open(playListFile, os.O_RDONLY))
+            playListStruct = json.load(open(playListFile, "r"))
         except Exception as e:
-            print e    
+            print(e)
+            print("This is a parsing error. Strings in json must be delimited with \" instead of ' ")
             raise PlayListImportErrorException()
+        
+        for elem in ["sponsors","blocks","resources"]:
+            if not elem in playListStruct:
+                print(elem + " not found")
+                raise PlayListImportErrorException()
+
+        
+        for dateBlock in playListStruct["blocks"]:
+            if self._playList.has_key(block):
+                print("ERROR: )
+        
         
 
     def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
