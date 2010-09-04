@@ -66,13 +66,22 @@ module_logger = logging.getLogger("hyberia.mkvutils")
 
 class MkvUtils():
 
-    def __init__(self, config):
+    def __init__(self, config = None):
         # Instanciate the logger
         self.logger = logging.getLogger("hyberia.mkvutils.MkvUtils")
         self.logger.info("Creating instance")
-
+        
+        #HVIB API 1
+        self.HVIB_API_VERSION = 1
+        
         self._Config = config
 
+    def HVIB_RunningTime(self,filename):
+        '''
+        HVIB 1.0 RunningTime adapter
+        '''
+        return self.mkvTime(filename)
+        
     def mkvTime(self,fileName):
         """Return the time in second of the specified filename.
         If return is 0, it means it couldn't get a time.
