@@ -1,16 +1,20 @@
-{"sponsors": {
-    "sponsor_01" : {
-        "name": "ADV Films",
-        "file": "adv_sponsorship.avi"
-    },
-    "sponsor_02": {
-        "name": "Geneon Entertainment",
-        "file": "adv_sponsorship.avi"
-    }
- },
+{
  "resources": {
-    "intro": "intro.v1",
-    "outro": "outro.v2"
+    "intro": {"name" : "", "file" : "/mnt/video/intro.v1.mkv"},
+    "outro": {"name" : "", "file" : "/mnt/video/outro.v2.mkv"},
+    
+    "sponsor_01": { "name": "ADV Films", "file" : "/mnt/video/advfilm.mkv"},
+    "sponsor_02": { "name": "Geneon Entertainment", "file" : "/mnt/video/geneon.mkv"},
+    
+    "evangelion_01": { "name" : "Evangelion Episode 1 Remastered", "file" : "/mnt/video/evangelion_01.mkv"},
+    "evangelion_02": { "name" : "Evangelion Episode 2 Remastered", "file" : "/mnt/video/evangelion_02.mkv"},
+    "evangelion_03": { "name" : "Evangelion Episode 3 Remastered", "file" : "/mnt/video/evangelion_03.mkv"},
+    
+    "nana_01": { "name" : "Nana Episode 1", "file" : "/mnt/video/nana_01.mkv"},
+    "nana_02": { "name" : "Nana Episode 2", "file" : "/mnt/video/nana_02.mkv"},
+    "nana_03": { "name" : "Nana Episode 3", "file" : "/mnt/video/nana_03.mkv"}
+    
+    
  },
  "blocks":{
     "20100231":{

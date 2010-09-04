@@ -77,18 +77,17 @@ class PlayList():
         block['name'] = name
         block['description'] = description
         block['parts'] = []
+        return block
     
-    def __createPart(self, fileName):
-        if not os.path.exists(fileName):
-            raise PlayListFileNotFoundException()
-            
+    def __createPart(self, resource):          
         part = {}
         
         #The video file name
-        part['fileName'] = fileName
+        part['file'] = resource['file']
+        part['name'] = resource['name']
         
         #Duration in seconds
-        part['duration'] = self.__videoInfoBackend.HVIB_RunningTime(fileName)
+        part['duration'] = self.__videoInfoBackend.HVIB_RunningTime(part['file'])
         
         #Will hold when to play the file as a datetime format (yyyymmddhhiiss)
         part['playAt'] = 0
@@ -106,17 +105,46 @@ class PlayList():
             print("This is a parsing error. Strings in json must be delimited with \" instead of ' ")
             raise PlayListImportErrorException()
         
-        for elem in ["sponsors","blocks","resources"]:
+        for elem in ["blocks","resources"]:
             if not elem in playListStruct:
                 print(elem + " not found")
                 raise PlayListImportErrorException()
 
         
+        for resource in playListStruct['resources']:
+            if not 'file' in playListStruct['resources'][resource]:
+                print("CRITICAL: Resource "+ str(resource) +" has no file attribute");
+                raise PlayListImportErrorException()
+                
+            if not os.path.exists(playListStruct['resources'][resource]['file']):
+                print("CRITICAL: Resource " + str(resource) + " file ("+ playListStruct['resources'][resource]['file'] +") does not exists")
+                raise PlayListImportErrorException()
+                
+                
+                
         for dateBlock in playListStruct["blocks"]:
-            if self._playList.has_key(block):
-                print("ERROR: )
-        
-        
+            if self._playList.has_key(dateBlock):
+                print("ERROR: Duplicate date blocks")
+                raise PlayListImportErrorException()
+            
+            prev_block_id = 0
+            
+            for timeBlock in playListStruct["blocks"][dateBlock]:
+                blockStruct = playListStruct["blocks"][dateBlock][timeBlock]
+                
+                block = self.__createBlock(dateBlock,timeBlock,blockStruct["name"],blockStruct["description"])
+                for part in blockStruct['parts']:
+                    part = self.__createPart(part)
+                    block['parts'].append(part)
+                    block['totalRunTime'] += part['duration']
+                
+                blockId = dateBlock * 1000 + timeBlock
+                if prev_block_id > blockId:
+                    print("Critical: Block duration overlapping at " + str(blockId))
+                    raise PlayListImportErrorException()
+                self._playList[blockId].append(block)
+                
+        print repr(self._playList);
 
     def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
         return datetime.datetime.now().strftime(format)
