@@ -162,6 +162,8 @@ class HyberiaDaemon():
                 if seekTo > 180:
                     seekTo -= 180
                     duration -= 180
+                else:
+                    seekTo = 0
                 
                 #TODO: Send playlist and seek
                 self.__scheduler.enter(0,1,self.play,(duration,playList))
