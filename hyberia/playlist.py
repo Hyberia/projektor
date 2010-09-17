@@ -30,7 +30,7 @@ __license__ = "Eiffel Version 2"
 __version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
-import os,sys,datetime,json,logging
+import os,sys,datetime,json,logging,time
 
 # Instanciate the logging
 module_logger = logging.getLogger("hyberia.playlist")
@@ -151,7 +151,13 @@ class PlayList():
                         print ("CRITICAL: Block " + timeBlock +" on " + dateBlock +" does not have a " + item + "!")
                         raise PlayListImportErrorException()
                 
-                blockId = (int(dateBlock) * 10000) + int(timeBlock)
+                
+                #blockid is date with seconds, move to unix timestamp
+                blockId = ((int(dateBlock) * 10000) + int(timeBlock)) * 100
+                print blockId
+                blockId = datetime.datetime.strptime(str(blockId), "%Y%m%d%H%M%S")
+                blockId = int(time.mktime(blockId.timetuple()))
+                
                 block = self.__createBlock(blockId,dateBlock,timeBlock,blockStruct["name"],blockStruct["description"])
                 for part in blockStruct['parts']:
                     
@@ -161,12 +167,15 @@ class PlayList():
                     
                     resource = playListStruct['resources'][part]
                     part = self.__createPart(resource)
+
+                    part['playAt'] = blockId + block['totalRunTime']                    
                     block['parts'].append(part)
                     block['totalRunTime'] += part['duration']
                 
                 if prev_block_id > blockId:
                     print("Critical: Block duration overlapping at " + str(blockId))
                     raise PlayListImportErrorException()
+                    
                 self._playList.append(blockId)
                 self._blocks[blockId] = block
                 
@@ -174,7 +183,7 @@ class PlayList():
         self._playList.sort()
         
     def getCurrentBlock(self):
-        curTimeId = self._getFormattedDateTime()
+        curTimeId = int(time.time())
         curBlock = None
         
         for blockId in self._playList:
@@ -182,14 +191,10 @@ class PlayList():
                 curBlock = blockId
                 continue
             
-            #Prevent giving a block for a different day
-            if int(curBlock / 10000) > int(curTimeId / 10000):
-                return None
-            return self._blocks[curBlock]
+            if not curBlock:
+                curBlock = blockId
+            return self._blocks[curBlock]            
         return None
-            
-    def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
-        return int(datetime.datetime.now().strftime(format))
 
 if __name__ == "__main__":
     print "##### DEBUG ######"

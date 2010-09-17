@@ -93,6 +93,15 @@ class HyberiaDaemon():
         self.logger.debug("Entering Run")
         self.__scheduler.enter(0,1, self.events, ())
         self.__scheduler.run()
+    
+    def play(self,block):
+        print repr(block)
+        
+        blockEnds = (block['id'] * 100) + block['totalRunTime']
+        
+        print blockEnds
+        #Schedule next event check
+        self.__scheduler.enter(blockEnds, 1, self.events,())
         
     def events(self):
         
@@ -110,16 +119,60 @@ class HyberiaDaemon():
             return
         
         self.logger.debug("preparing to play block %s" % block['id'])
+        curTime = int(time.time())
         
         #Transfer in seconds and determine if the presentation isa lready in progress (recovery) or will play next.
-        if self._getFormattedDateTime() > (block['id'] * 100):
+        if curTime > block['id']:
+            
             #Recovery
             self.logger.debug("block has already started. preparing to seek to file.")
+            
+            curPart = None
+            playList = []
+            for part in block['parts']:
+                if part['playAt'] < curTime:
+                    curPart = part
+                    continue
+                
+                if playList.count == 0:
+                    playList.append(curPart)
+                playList.append(part)
+                
+            self.logger.debug("verifying if playing %s" % repr(curPart))
+            
+            if neededPart > curPart['playAt']:
+                self.logger.debug("part should currently be playing.")
+                #TODO : SEEK
+                return
+            
+            
+            if curTime > (block['id'] + block['totalRunTime']):
+                self.logger.debug("current block has ended. no possible recovery")
+                self.__scheduler.enter(10,1,self.events,())
+                return
+            
+            #TODO: Seek!!!
+            self.logger.debug("should be playing the file. need to seek")
+            print repr(playList)
+            
+            #TODO: Scheduler event
+            return
         else:
             #Play next
-            
-        self.__scheduler.enter(10,1,self.events,())
-        return
+            timeTillBlock = block['id'] - curTime
+            print block
+            self.logger.debug("block will start in %s seconds" % timeTillBlock)
+            self.__scheduler.enter(timeTillBlock,1,self.play,(block,))
+            return
+        
+        
+
+    def comp_dates(self, d1, d2):
+        # Date format: %Y-%m-%d %H:%M:%S
+        return time.mktime(time.strptime(d2,"%Y%m%d%H%M%S"))-\
+               time.mktime(time.strptime(d1, "%Y%m%d%H%M%S"))
+
+
         '''
             
             self.block = self._Playlist.getCurrentBlock()
@@ -198,7 +251,7 @@ class HyberiaDaemon():
             self.logger.debug("Loop ending")
             time.sleep(self._Config.getint("timing", "loop_sleep") )
         '''
-    def _getFormattedDateTime(self, format = "%Y%m%d%H%M%S"):
+    def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
         return int(datetime.datetime.now().strftime(format))
         
     def _signalTerm(self,signal,frame):
