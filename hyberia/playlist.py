@@ -154,7 +154,6 @@ class PlayList():
                 
                 #blockid is date with seconds, move to unix timestamp
                 blockId = ((int(dateBlock) * 10000) + int(timeBlock)) * 100
-                print blockId
                 blockId = datetime.datetime.strptime(str(blockId), "%Y%m%d%H%M%S")
                 blockId = int(time.mktime(blockId.timetuple()))
                 

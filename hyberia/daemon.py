@@ -94,15 +94,15 @@ class HyberiaDaemon():
         self.__scheduler.enter(0,1, self.events, ())
         self.__scheduler.run()
     
-    def play(self,block):
-        print repr(block)
+    def play(self,duration,playList):
+        #TODO: play the playlist!
         
-        blockEnds = (block['id'] * 100) + block['totalRunTime']
-        
-        print blockEnds
         #Schedule next event check
-        self.__scheduler.enter(blockEnds, 1, self.events,())
+        print "scheduling end of block in %s seconds" % duration
         
+        self.__scheduler.enter(duration, 1, self.events,())
+        return
+    
     def events(self):
         
         '''if we are not running, try again in 10 seconds'''
@@ -135,32 +135,46 @@ class HyberiaDaemon():
                     continue
                 
                 if playList.count == 0:
-                    playList.append(curPart)
-                playList.append(part)
-                
-            self.logger.debug("verifying if playing %s" % repr(curPart))
+                    playList.append(curPart['file'])
+                playList.append(part['file'])
             
-            if neededPart > curPart['playAt']:
-                self.logger.debug("part should currently be playing.")
-                #TODO : SEEK
-                return
-            
-            
-            if curTime > (block['id'] + block['totalRunTime']):
-                self.logger.debug("current block has ended. no possible recovery")
+            if not curPart:
+                self.logger.debug("nothing to play.")
                 self.__scheduler.enter(10,1,self.events,())
                 return
             
-            #TODO: Seek!!!
-            self.logger.debug("should be playing the file. need to seek")
-            print repr(playList)
+            self.logger.debug("verifying if playing %s" % repr(curPart))
             
-            #TODO: Scheduler event
+            blockStopAt = (block['id'] + block['totalRunTime'])
+            if curTime > blockStopAt:
+                self.logger.debug("current block has ended. no possible recovery")
+                self.__scheduler.enter(30,1,self.events,())
+                return
+            
+            if curTime > curPart['playAt']:
+                self.logger.debug("part should currently be playing.")
+                
+                seekTo = curTime - curPart['playAt']
+                
+                duration = curTime - block['id']
+                
+                #Give 30 sec back to the people?
+                if seekTo > 180:
+                    seekTo -= 180
+                    duration -= 180
+                
+                #TODO: Send playlist and seek
+                self.__scheduler.enter(0,1,self.play,(duration,playList))
+                
+                return
+            
+            #if we fall here... something very weird has happened...
+            self.logger.critical("got to the end of recovery process with nothing to recover.")
+            self.__scheduler.enter(1,1,self.events,())
             return
         else:
             #Play next
             timeTillBlock = block['id'] - curTime
-            print block
             self.logger.debug("block will start in %s seconds" % timeTillBlock)
             self.__scheduler.enter(timeTillBlock,1,self.play,(block,))
             return
