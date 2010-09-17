@@ -29,12 +29,12 @@ __license__ = "Eiffel Version 2"
 __version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
-import time, signal, datetime, os
+import time, signal, datetime, os, sched
 import mkvutils
 
 # Instanciate the logging
 import logging
-module_logger = logging.getLogger("hyberia.daemon")
+logger = logging.getLogger("hyberia.daemon")
 
 class HyberiaDaemon():
     """This class provide a way to keep the video database in memory and
@@ -42,7 +42,7 @@ class HyberiaDaemon():
     """
     def __init__(self, playlist, player, config, mkv):
         # Instanciate the logger
-        self.logger = logging.getLogger("hyberia.daemon.HyberiaDaemon")
+        self.logger = logging.getLogger("hyberia.daemon")
         self.logger.info("Creating instance")
 
         signal.signal (signal.SIGTERM, self._signalTerm)
@@ -50,8 +50,6 @@ class HyberiaDaemon():
         
         #Shouldn't sighup raise a "refresh playlist" event or refresh what is currently playing?
         signal.signal (signal.SIGHUP, self._signalTerm)
-        
-        signal.signal (signal.SIGCONT, self._signalCont)
        
         
         self._isRunning = True
@@ -59,8 +57,10 @@ class HyberiaDaemon():
         self._Player = player
         self._Config = config
         self._MkvUtils = mkv
-        self._CurrentVideo = self._Config.get("video","recovery")
-
+        self.__scheduler = sched.scheduler(time.time,time.sleep)
+        
+        
+        
     def stop(self):
         """Stop the loop
         """
@@ -90,15 +90,39 @@ class HyberiaDaemon():
     def run(self):
         """Main daemon routine
         """
-        self.logger.debug("Entering run loop")
-        self.logger.debug("Loop sleep time is %d seconds" % (self._Config.getint("timing","loop_sleep"), ) )
-        # This will containt a sq3.row instance
-        CurrentVideo = {}
-        # For logging purposes
-        while(self._isRunning):
-            self.logger.info("Entering Loop at %s" % (datetime.datetime.now().strftime("%H%M.%S"),))
-
-            self.video = self._Playlist.get()
+        self.logger.debug("Entering Run")
+        self.__scheduler.enter(0,1, self.events, ())
+        self.__scheduler.run()
+        
+    def events(self):
+        
+        '''if we are not running, try again in 10 seconds'''
+        if not self._isRunning:
+            self.logger.debug("We are not running. Trying again in 10 seconds")
+            self.__scheduler.enter(10,1,self.events, ())
+            return
+        
+        block = self._Playlist.getCurrentBlock()        
+        if not block:
+            self.__scheduler.enter(10,1,self.events, ())
+            self.logger.debug("nothing to play.")
+            #TODO: Get next block and timeout
+            return
+        
+        self.logger.debug("preparing to play block %s" % block['id'])
+        
+        #Transfer in seconds and determine if the presentation isa lready in progress (recovery) or will play next.
+        if self._getFormattedDateTime() > (block['id'] * 100):
+            #Recovery
+            self.logger.debug("block has already started. preparing to seek to file.")
+        else:
+            #Play next
+            
+        self.__scheduler.enter(10,1,self.events,())
+        return
+        '''
+            
+            self.block = self._Playlist.getCurrentBlock()
             self.logger.debug("Current Video: " + self._CurrentVideo)
             self.logger.debug("self.video = " + str(self.video))
             #self.logger.debug("Playlist Video: " + video['file'])
@@ -173,7 +197,10 @@ class HyberiaDaemon():
             # Loop is over
             self.logger.debug("Loop ending")
             time.sleep(self._Config.getint("timing", "loop_sleep") )
-
+        '''
+    def _getFormattedDateTime(self, format = "%Y%m%d%H%M%S"):
+        return int(datetime.datetime.now().strftime(format))
+        
     def _signalTerm(self,signal,frame):
         """Will exit the loop and let the application close.
         """
@@ -182,48 +209,21 @@ class HyberiaDaemon():
         if self.playerRunning():
             os.remove(self._Config.get("core","tmp-location")+"/player_running")
 
-    def _signalCont(self, signal, frame):
-        """Signal from the TOUEID process telling the loop that mplayer have
-        been restart. replaying the current video.
-        """
-        self.logger.debug("Received signal %s" % (signal, ))
-        if signal == 18:
-            # we restore the current video
-            self.logger.warn("SIGCONT signal received, restoring video")
-            # @TODO Add the seek feature when mplayer crash in the middle of a video
-
-            # Close the socket et reopen it
-            self._Player.closeSocket()
-            self._Player.openSocket()
-
-            # Force play it
-            self._Player.openFile(self._CurrentVideo)
-            # @TODO Add the seek to restore the video where is was
-
-            # Get the delta
-            if self.video != None:
-                # There is a video playing, restart it.
-                bDelta = self.secondsDelta(self.video['datetime_start'])
-                if bDelta > self._Config.getint("timing","recovery_time"):
-                    # We need to seek
-                    self.logger.info("Restoring: Over the recovery time, seeking")
-                    # Send the seek commands
-                    self._Player.seek(True, bDelta - self._Config.getint("timing","recovery_time"))
-                else:
-                    # We are within the recovery time, don't seek
-                    self.logger.info("Restoring: Wihin the recovery, doing nothing")
-            else:
-                # do nothing
-                self.logger.debug("Restoring: No video to restore, sleeping.")
-        # REMOVED, simply kill touei_run and toueid will restart it and generate
-        # The new stuff
-        #elif signal == 25:
-            ## We rebuild the playlist database
-            #self.logger.warn("Signal 25 received, rebuilding video DB")
-            #self._Playlist.load(self._Config.get("video", "location"))
-
-
 if __name__ == "__main__":
     print "##### DEBUG ######"
-    d = HyberiaDaemon()
+    
+    ch = logging.StreamHandler()
+    cformatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
+    ch.setFormatter(cformatter)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(ch)
+        
+    from mkvutils import MkvUtils
+    from playlist import PlayList
+    m = MkvUtils()
+    p = PlayList(m)
+    p.load('../cfg/playlist.json')
+    
+    #(self, playlist, player, config, mkv)
+    d = HyberiaDaemon(p,None,None,m)
     d.run()

@@ -68,9 +68,11 @@ class PlayList():
             
         self.__videoInfoBackend = videoInfoBackend
         self._playList = []
+        self._blocks = {}
         
-    def __createBlock(self, runDate = 0, runTime = 0, name = "DefaultBlockName" , description = ""):
+    def __createBlock(self, id = 0, runDate = 0, runTime = 0, name = "DefaultBlockName" , description = ""):
         block = {}
+        block['id'] = id
         block['runDate'] = int(runDate)
         block['runTime'] = int(runTime)
         block['totalRunTime'] = 0
@@ -148,8 +150,9 @@ class PlayList():
                     if not item in blockStruct:
                         print ("CRITICAL: Block " + timeBlock +" on " + dateBlock +" does not have a " + item + "!")
                         raise PlayListImportErrorException()
-                    
-                block = self.__createBlock(dateBlock,timeBlock,blockStruct["name"],blockStruct["description"])
+                
+                blockId = (int(dateBlock) * 10000) + int(timeBlock)
+                block = self.__createBlock(blockId,dateBlock,timeBlock,blockStruct["name"],blockStruct["description"])
                 for part in blockStruct['parts']:
                     
                     if not part in playListStruct['resources']:
@@ -161,31 +164,32 @@ class PlayList():
                     block['parts'].append(part)
                     block['totalRunTime'] += part['duration']
                 
-                blockId = (int(dateBlock) * 10000) + int(timeBlock)
-
                 if prev_block_id > blockId:
                     print("Critical: Block duration overlapping at " + str(blockId))
                     raise PlayListImportErrorException()
-                self._playList.append(block)
+                self._playList.append(blockId)
+                self._blocks[blockId] = block
+                
         print ("INFO: Loaded " + str(len(self._playList)) + " blocks.")        
         self._playList.sort()
-
+        
     def getCurrentBlock(self):
         curTimeId = self._getFormattedDateTime()
+        curBlock = None
         
         for blockId in self._playList:
             if blockId < curTimeId:
+                curBlock = blockId
                 continue
             
             #Prevent giving a block for a different day
-            if int(blockId / 10000) > int(curTimeId / 10000):
+            if int(curBlock / 10000) > int(curTimeId / 10000):
                 return None
-            
-            return self._playList[blockId]
+            return self._blocks[curBlock]
         return None
             
     def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
-        return datetime.datetime.now().strftime(format)
+        return int(datetime.datetime.now().strftime(format))
 
 if __name__ == "__main__":
     print "##### DEBUG ######"
