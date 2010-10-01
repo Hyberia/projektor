@@ -39,13 +39,9 @@ CONFIG_FILE = "/home/elwillow/projects/hyberia/cfg/hyberia.conf"
 ###
 
 # Importation!
-import logging
-import logging.config
+import logging, logging.config
 import ConfigParser
-import time
-import os
-import sys
-import yaml
+import time, os, sys, json
 # @TODO Something is fishy.
 import hyberia
 from hyberia import *
@@ -92,9 +88,6 @@ if __name__ == "__main__":
     logger.info("======= NEW INSTANCE =======")
     if config.getint("logs", "debug_level") == 10:
         logger.debug("RUNNING IN DEBUG")
-    # Load YAML playlist file
-    plsStream = file(config.get('video', 'location')+"playlist.yaml", 'r')
-    playlistYaml = yaml.load(plsStream)
     logger.info("Begin sanity check")
     # Check: video, location
     if not os.path.isdir(config.get('video', 'location')):
