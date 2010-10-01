@@ -30,7 +30,7 @@ __license__ = "Eiffel Version 2"
 __version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
-import os,sys,datetime,json,logging
+import os,sys,datetime,json,logging,time
 
 # Instanciate the logging
 module_logger = logging.getLogger("hyberia.playlist")
@@ -68,9 +68,11 @@ class PlayList():
             
         self.__videoInfoBackend = videoInfoBackend
         self._playList = []
+        self._blocks = {}
         
-    def __createBlock(self, runDate = 0, runTime = 0, name = "DefaultBlockName" , description = ""):
+    def __createBlock(self, id = 0, runDate = 0, runTime = 0, name = "DefaultBlockName" , description = ""):
         block = {}
+        block['id'] = id
         block['runDate'] = int(runDate)
         block['runTime'] = int(runTime)
         block['totalRunTime'] = 0
@@ -148,8 +150,14 @@ class PlayList():
                     if not item in blockStruct:
                         print ("CRITICAL: Block " + timeBlock +" on " + dateBlock +" does not have a " + item + "!")
                         raise PlayListImportErrorException()
-                    
-                block = self.__createBlock(dateBlock,timeBlock,blockStruct["name"],blockStruct["description"])
+                
+                
+                #blockid is date with seconds, move to unix timestamp
+                blockId = ((int(dateBlock) * 10000) + int(timeBlock)) * 100
+                blockId = datetime.datetime.strptime(str(blockId), "%Y%m%d%H%M%S")
+                blockId = int(time.mktime(blockId.timetuple()))
+                
+                block = self.__createBlock(blockId,dateBlock,timeBlock,blockStruct["name"],blockStruct["description"])
                 for part in blockStruct['parts']:
                     
                     if not part in playListStruct['resources']:
@@ -158,34 +166,34 @@ class PlayList():
                     
                     resource = playListStruct['resources'][part]
                     part = self.__createPart(resource)
+
+                    part['playAt'] = blockId + block['totalRunTime']                    
                     block['parts'].append(part)
                     block['totalRunTime'] += part['duration']
                 
-                blockId = (int(dateBlock) * 10000) + int(timeBlock)
-
                 if prev_block_id > blockId:
                     print("Critical: Block duration overlapping at " + str(blockId))
                     raise PlayListImportErrorException()
-                self._playList.append(block)
+                    
+                self._playList.append(blockId)
+                self._blocks[blockId] = block
+                
         print ("INFO: Loaded " + str(len(self._playList)) + " blocks.")        
         self._playList.sort()
-
+        
     def getCurrentBlock(self):
-        curTimeId = self._getFormattedDateTime()
+        curTimeId = int(time.time())
+        curBlock = None
         
         for blockId in self._playList:
             if blockId < curTimeId:
+                curBlock = blockId
                 continue
             
-            #Prevent giving a block for a different day
-            if int(blockId / 10000) > int(curTimeId / 10000):
-                return None
-            
-            return self._playList[blockId]
+            if not curBlock:
+                curBlock = blockId
+            return self._blocks[curBlock]            
         return None
-            
-    def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
-        return datetime.datetime.now().strftime(format)
 
 if __name__ == "__main__":
     print "##### DEBUG ######"

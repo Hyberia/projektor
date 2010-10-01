@@ -6,9 +6,9 @@
     "sponsor_01": { "name": "ADV Films", "file" : "/mnt/video/advfilm.mkv"},
     "sponsor_02": { "name": "Geneon Entertainment", "file" : "/mnt/video/geneon.mkv"},
     
-    "evangelion_01": { "name" : "Evangelion Episode 1 Remastered", "file" : "/mnt/video/evangelion_01.mkv"},
-    "evangelion_02": { "name" : "Evangelion Episode 2 Remastered", "file" : "/mnt/video/evangelion_02.mkv"},
-    "evangelion_03": { "name" : "Evangelion Episode 3 Remastered", "file" : "/mnt/video/evangelion_03.mkv"},
+    "evangelion_01": { "name" : "Evangelion Episode 1 Remastered", "file" : "/home/masom/Videos/1.mkv"},
+    "evangelion_02": { "name" : "Evangelion Episode 2 Remastered", "file" : "/home/masom/Videos/2.mkv"},
+    "evangelion_03": { "name" : "Evangelion Episode 3 Remastered", "file" : "/home/masom/Videos/3.mkv"},
     
     "nana_01": { "name" : "Nana Episode 1", "file" : "/mnt/video/nana_01.mkv"},
     "nana_02": { "name" : "Nana Episode 2", "file" : "/mnt/video/nana_02.mkv"},
@@ -17,8 +17,8 @@
     
  },
  "blocks":{
-    "20100231":{
-        "2200": {
+    "20100917":{
+        "0000": {
             "name" : "Evangelion",
             "description": "Evangelion TV serie remastered",
             "parts": [
@@ -31,7 +31,7 @@
                 "sponsor_01"
             ]
         },
-        "2300": {
+        "0120": {
             "name" : "Nana",
             "description": "Nana TV serie",
             "parts": [
