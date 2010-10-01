@@ -30,7 +30,7 @@ __version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 # default is /etc/hyberia.conf
-CONFIG_FILE = "/home/elwillow/projects/hyberia/cfg/hyberia.conf"
+CONFIG_FILE = "/etc/hyberia.conf"
 # ALL OTHER CONFIGURATION ARE DONE IN THIS FILE.
 
 
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     player = player.PlayerInterface(config.get("core", "slave_socket"))
 
     # Call the daemon
-    daemon = daemon.HyberiaDeamon(playlist, player, config, mkv)
+    daemon = daemon.HyberiaDaemon(playlist, player, config, mkv)
     # Enter the loop
     daemon.run()
 
