@@ -47,36 +47,22 @@ class HyberiaDaemon():
 
         signal.signal (signal.SIGTERM, self._signalTerm)
         signal.signal (signal.SIGINT, self._signalTerm)
-        
+
         #Shouldn't sighup raise a "refresh playlist" event or refresh what is currently playing?
         signal.signal (signal.SIGHUP, self._signalTerm)
-       
-        
+
         self._isRunning = True
         self._Playlist = playlist
         self._Player = player
         self._Config = config
         self._MkvUtils = mkv
         self.__scheduler = sched.scheduler(time.time,time.sleep)
-        
-        
-        
+
     def stop(self):
         """Stop the loop
         """
         self.logger.debug("stop() called")
-        self._isRunning = False
-
-    def playerRunning(self):
-        """Will check for the player state file deleted by toueid.
-        """
-        return os.path.exists(self._Config.get("core","tmp-location")+"/player_running")
-
-    def setPlayerRunning(self):
-        """Create the file for toueid and the player state (if we crash)
-        """
-        if not self.playerRunning():
-            open(self._Config.get("core","tmp-location")+"/player_running", "w").close()
+        map(self.__scheduler.cancel, self.__scheduler.queue)
 
     def secondsDelta(self, blockStart):
         """Return the number of seconds since the begining of the current block
@@ -93,83 +79,83 @@ class HyberiaDaemon():
         self.logger.debug("Entering Run")
         self.__scheduler.enter(0,1, self.events, ())
         self.__scheduler.run()
-    
+
     def play(self,duration,playList):
         #TODO: play the playlist!
-        
+
         #Schedule next event check
         print "scheduling end of block in %s seconds" % duration
-        
+
         self.__scheduler.enter(duration, 1, self.events,())
         return
-    
+
     def events(self):
-        
+
         '''if we are not running, try again in 10 seconds'''
         if not self._isRunning:
             self.logger.debug("We are not running. Trying again in 10 seconds")
             self.__scheduler.enter(10,1,self.events, ())
             return
-        
-        block = self._Playlist.getCurrentBlock()        
+
+        block = self._Playlist.getCurrentBlock()
         if not block:
             self.__scheduler.enter(10,1,self.events, ())
             self.logger.debug("nothing to play.")
             #TODO: Get next block and timeout
             return
-        
+
         self.logger.debug("preparing to play block %s" % block['id'])
         curTime = int(time.time())
-        
+
         #Transfer in seconds and determine if the presentation isa lready in progress (recovery) or will play next.
         if curTime > block['id']:
-            
+
             #Recovery
             self.logger.debug("block has already started. preparing to seek to file.")
-            
+
             curPart = None
             playList = []
             for part in block['parts']:
                 if part['playAt'] < curTime:
                     curPart = part
                     continue
-                
+
                 if playList.count == 0:
                     playList.append(curPart['file'])
                 playList.append(part['file'])
-            
+
             if not curPart:
                 self.logger.debug("nothing to play.")
                 self.__scheduler.enter(10,1,self.events,())
                 return
-            
+
             self.logger.debug("verifying if playing %s" % repr(curPart))
-            
+
             blockStopAt = (block['id'] + block['totalRunTime'])
             if curTime > blockStopAt:
                 self.logger.debug("current block has ended. no possible recovery")
                 self.__scheduler.enter(30,1,self.events,())
                 return
-            
+
             if curTime > curPart['playAt']:
                 self.logger.debug("part should currently be playing.")
-                
+
                 seekTo = curTime - curPart['playAt']
-                
+
                 duration = curTime - block['id']
-                
+
                 #Give 30 sec back to the people?
                 if seekTo > 180:
                     seekTo -= 180
                     duration -= 180
                 else:
                     seekTo = 0
-                
+
                 #TODO: Send playlist and seek
                 self.__scheduler.enter(0,1,self.play,(duration,playList))
-                
+
                 return
-            
+
             #if we fall here... something very weird has happened...
             self.logger.critical("got to the end of recovery process with nothing to recover.")
             self.__scheduler.enter(1,1,self.events,())
@@ -180,119 +166,38 @@ class HyberiaDaemon():
             self.logger.debug("block will start in %s seconds" % timeTillBlock)
             self.__scheduler.enter(timeTillBlock,1,self.play,(block,))
             return
-        
-        
 
     def comp_dates(self, d1, d2):
         # Date format: %Y-%m-%d %H:%M:%S
         return time.mktime(time.strptime(d2,"%Y%m%d%H%M%S"))-\
                time.mktime(time.strptime(d1, "%Y%m%d%H%M%S"))
 
-
-        '''
-            
-            self.block = self._Playlist.getCurrentBlock()
-            self.logger.debug("Current Video: " + self._CurrentVideo)
-            self.logger.debug("self.video = " + str(self.video))
-            #self.logger.debug("Playlist Video: " + video['file'])
-            if self.video == None:
-                # Nothing for current time, Play standby video
-                self.logger.debug("No video for current block")
-                if self._CurrentVideo == self._Config.get("video","standby"):
-                    # Standby video is playing
-                    self.logger.info("Standby video is playing, sleeping")
-                else:
-                    # Play the standby video
-                    self.logger.info("Playing standby video")
-                    self._CurrentVideo = self._Config.get("video","standby")
-                    # Open the file is "soft" mode, aka append.
-                    self._Player.openFile(self._CurrentVideo, True)
-
-            elif self._CurrentVideo != self.video['file']:
-                # We have a new video to play (apparently)
-                self.logger.debug("Current video is different")
-                currentVideo = self.video
-                self._CurrentVideo = self.video['file']
-                # Create the intro file
-                introVideo = self._MkvUtils.generate_intro(os.path.split(self.video['file'])[1])
-                self.logger.debug("Intro video is " + introVideo)
-
-                bDelta = self.secondsDelta(self.video['datetime_start'])
-
-                # Check if the video is alive
-                if not self.playerRunning():
-                    # Not running, we have to restore the video
-                    self.logger.warn("Player was dead, restoring")
-                    # Check if we want the intro video
-                    if bDelta < self._Config.getint("timing", "loop_sleep") * 2:
-                        # Within the sleep timer
-                        self.logger.info("Within the loop_sleep time, Playing block")
-                        self._Player.openFile(introVideo)
-                        self._Player.openFile(self._CurrentVideo, True)
-
-                    # Send the video to player
-                    self._Player.openFile(self._CurrentVideo, True)
-
-                    # Check if we need to seek
-                    if bDelta > self._Config.getint("timing","recovery_time"):
-                        # We need to seek
-                        self.logger.info("Over the recovery time, seeking")
-                        # Send the seek commands
-                        self._Player.seek(True, bDelta)
-                    else:
-                        # We are within the recovery time, don't seek
-                        self.logger.info("Restoring: Wihin the recovery, doing nothing")
-                    # Send the intro to player
-
-
-                    # Send the outro to player
-                    #self._Player.openFile(self._Config.get("video","outro"))
-                    # Recreate the file
-                    self.setPlayerRunning()
-                else:
-                    # Player is still alive
-                    self.logger.warn("Player is still alive.")
-                    # Send the video to the player
-                    if bDelta < self._Config.getint("timing", "loop_sleep"):
-                        # Within the sleep timer
-                        self.logger.info("Within the loop_sleep time, Playing block")
-                        self._Player.openFile(introVideo)
-                        self._Player.openFile(self._CurrentVideo, True)
-            else:
-                # Nothing to do, video is playing
-                # It could also mean we just went through a _signalCont()
-                self.logger.debug("Still playing, sleeping")
-
-            # Loop is over
-            self.logger.debug("Loop ending")
-            time.sleep(self._Config.getint("timing", "loop_sleep") )
-        '''
     def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
         return int(datetime.datetime.now().strftime(format))
-        
+
     def _signalTerm(self,signal,frame):
         """Will exit the loop and let the application close.
         """
         self.logger.warn("SIGNTERM signal received, quitting")
         self._isRunning = False
-        if self.playerRunning():
-            os.remove(self._Config.get("core","tmp-location")+"/player_running")
+        map(self.__scheduler.cancel, self.__scheduler.queue)
+
 
 if __name__ == "__main__":
     print "##### DEBUG ######"
-    
+
     ch = logging.StreamHandler()
     cformatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
     ch.setFormatter(cformatter)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(ch)
-        
+
     from mkvutils import MkvUtils
     from playlist import PlayList
     m = MkvUtils()
     p = PlayList(m)
     p.load('../cfg/playlist.json')
-    
+
     #(self, playlist, player, config, mkv)
     d = HyberiaDaemon(p,None,None,m)
     d.run()

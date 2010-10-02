@@ -46,12 +46,12 @@ class PlayList():
         # Instanciate the logger
         self.logger = logging.getLogger("hyberia.playlist.Playlist")
         self.logger.info("Creating instance")
-        
+
         if videoInfoBackend == None:
             print ("CRITICAL: HVIB not set")
             print("")
             raise PlayListVIBNotSetException()
-        
+
         #Look for HVIB_API_VERSION attr
         try:
             getattr(videoInfoBackend, "HVIB_API_VERSION")
@@ -59,17 +59,17 @@ class PlayList():
             print ("CRITICAL: Non-HVIB compliant videoInfoBackend.")
             print("")
             raise PlayListVIBNotSetException()
-        
+
         #Verify it matches required version
         if not videoInfoBackend.HVIB_API_VERSION >= 1:
             print ("CRITICAL: Incompatible HVIB")
             print("")
             raise PlayListVIBNotSetException()
-            
+
         self.__videoInfoBackend = videoInfoBackend
         self._playList = []
         self._blocks = {}
-        
+
     def __createBlock(self, id = 0, runDate = 0, runTime = 0, name = "DefaultBlockName" , description = ""):
         block = {}
         block['id'] = id
@@ -80,30 +80,33 @@ class PlayList():
         block['description'] = description
         block['parts'] = []
         return block
-    
-    def __createPart(self, resource):          
+
+    def __createPart(self, resource):
         part = {}
-        
+
         #The video file name
         part['file'] = resource['file']
         part['name'] = resource['name']
-        
+
         #Duration in seconds
         part['duration'] = self.__videoInfoBackend.HVIB_RunningTime(part['file'])
-        
+
         #Will hold when to play the file as a datetime format (yyyymmddhhiiss)
         part['playAt'] = 0
         return part
-    
+
     def load(self, playListFile):
         '''Load the playlist file into memory'''
-        
-        
+
+        # Get the playlist file
+        playListFile = playListFile + "/playlist.json"
+        self.logger.debug("Loading playlist from %s" % (playListFile,))
+
         #Verify the playlist file exists
         if not os.path.exists(playListFile):
             self.logger.critical("Playlist file not found.");
             raise PlayListNotFoundException()
-        
+
         #Attempt to parse the playlist file
         try:
             playListStruct = json.load(open(playListFile, "r"))
@@ -111,88 +114,88 @@ class PlayList():
             print(e)
             print("This is a parsing error. Strings in json must be delimited with \" instead of ' ")
             raise PlayListImportErrorException()
-        
+
         #Verify that some data exists
         for elem in ["blocks","resources"]:
             if not elem in playListStruct:
                 print(elem + " not found")
                 raise PlayListImportErrorException()
 
-        
+
         #Parse the resources
         for resource in playListStruct['resources']:
             if not 'file' in playListStruct['resources'][resource]:
                 print("CRITICAL: Resource "+ str(resource) +" has no file attribute");
                 raise PlayListImportErrorException()
-            
+
             if not 'file' in playListStruct['resources'][resource]:
                 print("CRITICAL: Resource "+ resource +" does not have a file attribute!")
                 raise PlayListImportErrorException()
-                
+
             if not os.path.exists(playListStruct['resources'][resource]['file']):
                 print("CRITICAL: Resource " + str(resource) + " file ("+ playListStruct['resources'][resource]['file'] +") does not exists")
                 raise PlayListImportErrorException()
-                
-                
-                
+
+
+
         for dateBlock in playListStruct["blocks"]:
-            
+
             prev_block_id = 0
-            
+
             for timeBlock in playListStruct["blocks"][dateBlock]:
                 blockStruct = playListStruct["blocks"][dateBlock][timeBlock]
-                
+
                 if len(blockStruct['parts']) == 0:
                     print("WARNING: Skipping block " + str(timeBlock) + " on " + str(dateBlock) + ". No parts to play")
                     continue
-                
+
                 for item in ['name','description', 'parts']:
                     if not item in blockStruct:
                         print ("CRITICAL: Block " + timeBlock +" on " + dateBlock +" does not have a " + item + "!")
                         raise PlayListImportErrorException()
-                
-                
+
+
                 #blockid is date with seconds, move to unix timestamp
                 blockId = ((int(dateBlock) * 10000) + int(timeBlock)) * 100
                 blockId = datetime.datetime.strptime(str(blockId), "%Y%m%d%H%M%S")
                 blockId = int(time.mktime(blockId.timetuple()))
-                
+
                 block = self.__createBlock(blockId,dateBlock,timeBlock,blockStruct["name"],blockStruct["description"])
                 for part in blockStruct['parts']:
-                    
+
                     if not part in playListStruct['resources']:
                         print("CRITICAL: Part " + str(part) + " has no resource file!")
                         raise PlayListImportErrorException()
-                    
+
                     resource = playListStruct['resources'][part]
                     part = self.__createPart(resource)
 
-                    part['playAt'] = blockId + block['totalRunTime']                    
+                    part['playAt'] = blockId + block['totalRunTime']
                     block['parts'].append(part)
                     block['totalRunTime'] += part['duration']
-                
+
                 if prev_block_id > blockId:
                     print("Critical: Block duration overlapping at " + str(blockId))
                     raise PlayListImportErrorException()
-                    
+
                 self._playList.append(blockId)
                 self._blocks[blockId] = block
-                
-        print ("INFO: Loaded " + str(len(self._playList)) + " blocks.")        
+
+        print ("INFO: Loaded " + str(len(self._playList)) + " blocks.")
         self._playList.sort()
-        
+
     def getCurrentBlock(self):
         curTimeId = int(time.time())
         curBlock = None
-        
+
         for blockId in self._playList:
             if blockId < curTimeId:
                 curBlock = blockId
                 continue
-            
+
             if not curBlock:
                 curBlock = blockId
-            return self._blocks[curBlock]            
+            return self._blocks[curBlock]
         return None
 
 if __name__ == "__main__":

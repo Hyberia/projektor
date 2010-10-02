@@ -42,5 +42,6 @@ CONFIG_DEFAULT_VALUE={"playlist": "/mnt/video/playlist.yaml",
                       "block_duration": "60",
                       "loop_sleep": "10",
                       "location": "/mnt/video",
+                      "intro": "/mnt/video/intro.mkv",
                       "tmp-location": "/tmp/hyberia",
                       }
