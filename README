@@ -53,50 +53,6 @@ DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 * Your video file with specific filename
 * Enough of disk space for the video muxing
 
-@TODO: Missing how to configure xorg and initrc
-@TODO: add source for software
-
-There is NO check if those programs are installed. You should make sure they are.
-
-4) Prerequisites
-----------------
-
-** filename pattern **
-
-First you need to rename your file according to a specific pattern:
-- The first 4 characters are the time the video will be played in
-  24 military hours format (4h00 PM = 1600).
-  Minutes need to comply with a modulus 5, meaning must be a multiple of 5. 1604 is invalid.
-
-- A dot "."
-
-- The name of the video. it will be used for the subtitling of the
-  introduction video. It NEEDS to be unique.
-  NO SPACE. Use underscores, they will be replaced by space. Also, don't
-  worry about the case, it will be `Title` for the intro video.
-
-- The ".mkv" string for extension.
-
-If you want to play "Higurashi no Naku Koro ni" at 3h45 PM the filename
-will be:
-
-   1545.Higurashi_no_Naku_Koro_ni.mkv
-
-DO NOT PUT SPECIAL CHARACTERS IN THE FILENAME, PARSING WILL BREAK
-
-** File structure **
-
-The file structure is simple, inside the folder in the LOCATION config
-entry you will need one folder for each day. The name of the folder is a
-zero padded day of the month(04 for the 4th of the month,10 for the 10th of the month).
-If the location does not exist, the script will die.
-The script will also create the folder structure in the TMP-LOCATION.
-If you are not sure what is the structure delete the TMP-LOCATION folder
-and it will be recreated.
-
-Since the default is in the /tmp you shouldn't worry to much, as it is wiped
-at each reboot. Just make sure there is enough space for the intro videos.
-
 
 5) Installation
 ---------------

@@ -17,8 +17,8 @@
     
  },
  "blocks":{
-    "20100917":{
-        "0000": {
+    "20101005":{
+        "0203": {
             "name" : "Evangelion",
             "description": "Evangelion TV serie remastered",
             "parts": [
@@ -31,7 +31,7 @@
                 "sponsor_01"
             ]
         },
-        "0120": {
+        "0250": {
             "name" : "Nana",
             "description": "Nana TV serie",
             "parts": [

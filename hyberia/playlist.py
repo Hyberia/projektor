@@ -32,9 +32,6 @@ __contributors__= "Mathieu Charron, Martin Samson"
 
 import os,sys,datetime,json,logging,time
 
-# Instanciate the logging
-module_logger = logging.getLogger("hyberia.playlist")
-
 class PlayListNotFoundException(Exception): pass
 class PlayListImportErrorException(Exception): pass
 class PlayListFileNotFoundException(Exception): pass
@@ -44,26 +41,22 @@ class PlayList():
     def __init__(self, videoInfoBackend = None):
         '''videoInfoBackend Hyberia VIB API compatible backend class instance'''
         # Instanciate the logger
-        self.logger = logging.getLogger("hyberia.playlist.Playlist")
-        self.logger.info("Creating instance")
+        self.logger = logging.getLogger("hyberia.playlist")
 
         if videoInfoBackend == None:
-            print ("CRITICAL: HVIB not set")
-            print("")
+            self.logger.critical("HVIB not set")
             raise PlayListVIBNotSetException()
 
         #Look for HVIB_API_VERSION attr
         try:
             getattr(videoInfoBackend, "HVIB_API_VERSION")
         except AttributeError:
-            print ("CRITICAL: Non-HVIB compliant videoInfoBackend.")
-            print("")
+            self.logger.critical("Non-HVIB compliant videoInfoBackend.")
             raise PlayListVIBNotSetException()
 
         #Verify it matches required version
         if not videoInfoBackend.HVIB_API_VERSION >= 1:
-            print ("CRITICAL: Incompatible HVIB")
-            print("")
+            self.logger.critical("CRITICAL: Incompatible HVIB")
             raise PlayListVIBNotSetException()
 
         self.__videoInfoBackend = videoInfoBackend
@@ -97,10 +90,7 @@ class PlayList():
 
     def load(self, playListFile):
         '''Load the playlist file into memory'''
-
-        # Get the playlist file
-        playListFile = playListFile + "/playlist.json"
-        self.logger.debug("Loading playlist from %s" % (playListFile,))
+        self.logger.debug("Loading playlist from %s ." % (playListFile,))
 
         #Verify the playlist file exists
         if not os.path.exists(playListFile):
@@ -111,33 +101,31 @@ class PlayList():
         try:
             playListStruct = json.load(open(playListFile, "r"))
         except Exception as e:
-            print(e)
-            print("This is a parsing error. Strings in json must be delimited with \" instead of ' ")
+            self.logger.warning("This is a parsing error. Strings in json must be delimited with \" instead of ' .")
+            self.logger.critical(e)
             raise PlayListImportErrorException()
 
         #Verify that some data exists
         for elem in ["blocks","resources"]:
             if not elem in playListStruct:
-                print(elem + " not found")
+                self.logger.warning("%s not found." % elem)
                 raise PlayListImportErrorException()
 
 
         #Parse the resources
         for resource in playListStruct['resources']:
             if not 'file' in playListStruct['resources'][resource]:
-                print("CRITICAL: Resource "+ str(resource) +" has no file attribute");
+                self.logger.critical("Resource %s has no file attribute" % resource);
                 raise PlayListImportErrorException()
 
             if not 'file' in playListStruct['resources'][resource]:
-                print("CRITICAL: Resource "+ resource +" does not have a file attribute!")
+                self.logger.critical("Resource %s does not have a file attribute!" % resource)
                 raise PlayListImportErrorException()
 
             if not os.path.exists(playListStruct['resources'][resource]['file']):
-                print("CRITICAL: Resource " + str(resource) + " file ("+ playListStruct['resources'][resource]['file'] +") does not exists")
+                self.logger.critical("Resource %s file (%s) does not exists" % (resource,playListStruct['resources'][resource]['file']))
                 raise PlayListImportErrorException()
-
-
-
+                
         for dateBlock in playListStruct["blocks"]:
 
             prev_block_id = 0
@@ -146,12 +134,12 @@ class PlayList():
                 blockStruct = playListStruct["blocks"][dateBlock][timeBlock]
 
                 if len(blockStruct['parts']) == 0:
-                    print("WARNING: Skipping block " + str(timeBlock) + " on " + str(dateBlock) + ". No parts to play")
+                    self.logger.warning("Skipping block %s on %s. No parts to play", (timeBlock , dateBlock))
                     continue
 
                 for item in ['name','description', 'parts']:
                     if not item in blockStruct:
-                        print ("CRITICAL: Block " + timeBlock +" on " + dateBlock +" does not have a " + item + "!")
+                        self.logger.critical("Block %s on %s does not have a %s!" %s (timeBlock,dateBlock,item))
                         raise PlayListImportErrorException()
 
 
@@ -164,7 +152,7 @@ class PlayList():
                 for part in blockStruct['parts']:
 
                     if not part in playListStruct['resources']:
-                        print("CRITICAL: Part " + str(part) + " has no resource file!")
+                        self.logger.critical("Part %s has no resource file!" % part)
                         raise PlayListImportErrorException()
 
                     resource = playListStruct['resources'][part]
@@ -175,13 +163,13 @@ class PlayList():
                     block['totalRunTime'] += part['duration']
 
                 if prev_block_id > blockId:
-                    print("Critical: Block duration overlapping at " + str(blockId))
+                    self.logger.critical("Block duration overlapping at %s !" % blockId)
                     raise PlayListImportErrorException()
 
                 self._playList.append(blockId)
                 self._blocks[blockId] = block
 
-        print ("INFO: Loaded " + str(len(self._playList)) + " blocks.")
+        self.logger.debug(" Loaded %s blocks." % len(self._playList))
         self._playList.sort()
 
     def getCurrentBlock(self):
@@ -197,11 +185,3 @@ class PlayList():
                 curBlock = blockId
             return self._blocks[curBlock]
         return None
-
-if __name__ == "__main__":
-    print "##### DEBUG ######"
-    import mkvutils
-    m = mkvutils.MkvUtils()
-    p = PlayList(m)
-    p.load('../cfg/playlist.json')
-    print "get", p.getCurrentBlock()

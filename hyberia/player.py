@@ -32,7 +32,6 @@ import sys,os
 
 # Instanciate the logging
 import logging
-module_logger = logging.getLogger("hyberia.player")
 
 class SocketLocationException(Exception): pass
 class SocketException(Exception): pass
@@ -48,7 +47,7 @@ class PlayerInterface():
         """
 
         # Instanciate the logger
-        self.logger = logging.getLogger("hyberia.player.PlayerInterface")
+        self.logger = logging.getLogger("hyberia.player")
         self.logger.info("Creating instance")
 
         if not socketLocation:
@@ -170,7 +169,7 @@ class PlayerInterface():
         if self._execute(command):
             # Force fullscreen
             self.fullscreen(True)
-            self.logger.debug("Command successfully send: " + command)
+            self.logger.debug("Command successfully sent: %s" % command.rstrip())
             return True
         else:
             return False
@@ -188,19 +187,5 @@ class PlayerInterface():
             self.logger.debug("Seeking %s %d seconds" % (direction, seekTime))
             command = self._commands['seek'] % (direction, seekTime)
             return self._execute(command)
-        else:
-            self.logger.debug("Seek time was less than 1 (%d)" % (seekTime, ))
-            return True
-
-
-if __name__ == "__main__":
-    print "##### DEBUG ######"
-    from playlist import PlayList
-    pl = PlayList()
-    pl.load('/home/masom/dev/videos')
-    file = pl.getNext()
-    print file['file']
-
-    p = PlayerInterface("/tmp/mplayers")
-    print p.openFile(file['file'])
-
+        
+        return True

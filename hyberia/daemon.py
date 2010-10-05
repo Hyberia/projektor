@@ -29,12 +29,9 @@ __license__ = "Eiffel Version 2"
 __version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
-import time, signal, datetime, os, sched
+import time, signal, datetime, os, sched, logging
 import mkvutils
 
-# Instanciate the logging
-import logging
-logger = logging.getLogger("hyberia.daemon")
 
 class HyberiaDaemon():
     """This class provide a way to keep the video database in memory and
@@ -43,7 +40,6 @@ class HyberiaDaemon():
     def __init__(self, playlist, player, config, mkv):
         # Instanciate the logger
         self.logger = logging.getLogger("hyberia.daemon")
-        self.logger.info("Creating instance")
 
         signal.signal (signal.SIGTERM, self._signalTerm)
         signal.signal (signal.SIGINT, self._signalTerm)
@@ -61,31 +57,33 @@ class HyberiaDaemon():
     def stop(self):
         """Stop the loop
         """
-        self.logger.debug("stop() called")
+        self.logger.debug("stop called")
+        self._Player.stop()
         map(self.__scheduler.cancel, self.__scheduler.queue)
-
-    def secondsDelta(self, blockStart):
-        """Return the number of seconds since the begining of the current block
-        @param string blockStart
-        """
-        delta = datetime.datetime.now() - datetime.datetime.strptime(str(blockStart),"%Y%m%d%H%M")
-        print delta
-        self.logger.debug("BLOCK DELTA IS %d SECONDS" % (delta.seconds, ) )
-        return delta.seconds
 
     def run(self):
         """Main daemon routine
         """
-        self.logger.debug("Entering Run")
         self.__scheduler.enter(0,1, self.events, ())
         self.__scheduler.run()
 
-    def play(self,duration,playList):
+    def play(self,duration,playList, seekTo = 0):
         #TODO: play the playlist!
 
         #Schedule next event check
-        print "scheduling end of block in %s seconds" % duration
-
+        self.logger.info("Scheduling end of block in %s seconds" % duration)
+        
+        first = True
+        for file in playList:
+            if first:
+                self._Player.openFile(file,False)
+                first = False
+            else:
+                self._Player.openFile(file,True)
+        
+        if seekTo > 0:
+            self._Player.seek(True,seekTo)
+            
         self.__scheduler.enter(duration, 1, self.events,())
         return
 
@@ -99,19 +97,19 @@ class HyberiaDaemon():
 
         block = self._Playlist.getCurrentBlock()
         if not block:
+            self.logger.info("Nothing to play.")
             self.__scheduler.enter(10,1,self.events, ())
-            self.logger.debug("nothing to play.")
-            #TODO: Get next block and timeout
+            #TODO: Get next playing block
             return
 
-        self.logger.debug("preparing to play block %s" % block['id'])
+        self.logger.info("Preparing to play block %s" % block['id'])
         curTime = int(time.time())
 
         #Transfer in seconds and determine if the presentation isa lready in progress (recovery) or will play next.
         if curTime > block['id']:
 
             #Recovery
-            self.logger.debug("block has already started. preparing to seek to file.")
+            self.logger.info("Block has already started. Preparing to seek to file.")
 
             curPart = None
             playList = []
@@ -129,42 +127,48 @@ class HyberiaDaemon():
                 self.__scheduler.enter(10,1,self.events,())
                 return
 
-            self.logger.debug("verifying if playing %s" % repr(curPart))
+            self.logger.debug("Verifying if playing %s" % repr(curPart))
 
             blockStopAt = (block['id'] + block['totalRunTime'])
+            
             if curTime > blockStopAt:
-                self.logger.debug("current block has ended. no possible recovery")
+                self.logger.debug("Current block has ended. No possible recovery")
                 self.__scheduler.enter(30,1,self.events,())
                 return
 
             if curTime > curPart['playAt']:
-                self.logger.debug("part should currently be playing.")
+                self.logger.debug("Part should be currently playing.")
+                
+                playList.insert(0, curPart['file'])
+                
+                #seek to the time it should be playing and remove 1 minute for recovery
+                seekTo = curTime - curPart['playAt'] - 60
 
-                seekTo = curTime - curPart['playAt']
-
-                duration = curTime - block['id']
-
-                #Give 30 sec back to the people?
-                if seekTo > 180:
-                    seekTo -= 180
-                    duration -= 180
-                else:
+                if (seekTo < 0):
                     seekTo = 0
-
-                #TODO: Send playlist and seek
-                self.__scheduler.enter(0,1,self.play,(duration,playList))
+                
+                duration = block['totalRunTime'] - seekTo
+                
+                self.__scheduler.enter(0,1,self.play,(duration,playList,seekTo))
 
                 return
 
             #if we fall here... something very weird has happened...
-            self.logger.critical("got to the end of recovery process with nothing to recover.")
+            self.logger.critical("At the end of recovery process with nothing to recover.")
             self.__scheduler.enter(1,1,self.events,())
             return
+        
         else:
             #Play next
             timeTillBlock = block['id'] - curTime
-            self.logger.debug("block will start in %s seconds" % timeTillBlock)
-            self.__scheduler.enter(timeTillBlock,1,self.play,(block,))
+            self.logger.debug("Playing block in %s seconds" % timeTillBlock)
+            
+            playList = []
+            for part in block['parts']:
+                playList.append(part['file'])
+            
+            duration = block['totalRunTime']
+            self.__scheduler.enter(timeTillBlock,1,self.play,(duration,playList))
             return
 
     def comp_dates(self, d1, d2):
@@ -181,23 +185,3 @@ class HyberiaDaemon():
         self.logger.warn("SIGNTERM signal received, quitting")
         self._isRunning = False
         map(self.__scheduler.cancel, self.__scheduler.queue)
-
-
-if __name__ == "__main__":
-    print "##### DEBUG ######"
-
-    ch = logging.StreamHandler()
-    cformatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
-    ch.setFormatter(cformatter)
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(ch)
-
-    from mkvutils import MkvUtils
-    from playlist import PlayList
-    m = MkvUtils()
-    p = PlayList(m)
-    p.load('../cfg/playlist.json')
-
-    #(self, playlist, player, config, mkv)
-    d = HyberiaDaemon(p,None,None,m)
-    d.run()

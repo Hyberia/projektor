@@ -32,7 +32,7 @@ __contributors__= "Mathieu Charron, Martin Samson"
 
 __all__ = ["player", "playlist", "mkvutils", "daemon"]
 
-CONFIG_DEFAULT_VALUE={"playlist": "/mnt/video/playlist.yaml",
+CONFIG_DEFAULT_VALUE={"playlist": "cfg/playlist.json",
                       "pid": "/var/pid/hyberia.pid",
                       "slave_socket": "/tmp/hyberia_slave.fifo",
                       "main_log": "/tmp/hyberia_main.log",
@@ -42,6 +42,5 @@ CONFIG_DEFAULT_VALUE={"playlist": "/mnt/video/playlist.yaml",
                       "block_duration": "60",
                       "loop_sleep": "10",
                       "location": "/mnt/video",
-                      "intro": "/mnt/video/intro.mkv",
                       "tmp-location": "/tmp/hyberia",
                       }
