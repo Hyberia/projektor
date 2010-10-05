@@ -1,4 +1,4 @@
-touei README
+HYBERIA README
 ============
 
 Version  : 0.2.1
@@ -61,7 +61,7 @@ Until there is a better way to install this setup, follow these instructions:
 
 - Execute as root:
     ./install.sh
-  It will build and install toueid and readconfig then execute setup.py.
+  It will build and install hyberiactl and readconfig then execute setup.py.
 
   This accepts the following arguments: install, uninstall, clean
 

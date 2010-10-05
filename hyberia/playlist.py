@@ -27,7 +27,7 @@ please see http://hyberia.org for more info.
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.3.2"
+__version__ = "0.4"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 import os,sys,datetime,json,logging,time

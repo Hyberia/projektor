@@ -25,7 +25,7 @@ Provide an abstraction layer to control mplayer via the slave command.
 """
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.3.2"
+__version__ = "0.4"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 import sys,os

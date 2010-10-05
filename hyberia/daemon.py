@@ -26,7 +26,7 @@ please see http://hyberia.org for more info.
 
 __author__ = "G-Anime"
 __license__ = "Eiffel Version 2"
-__version__ = "0.3.2"
+__version__ = "0.4"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 import time, signal, datetime, os, sched, logging
@@ -168,16 +168,19 @@ class HyberiaDaemon():
                 playList.append(part['file'])
             
             duration = block['totalRunTime']
-            self.__scheduler.enter(timeTillBlock,1,self.play,(duration,playList))
+            seekTo = 0
+            
+            intro_file = self._MkvUtils.generate_intro(playList[0])
+            if intro_file:
+                if timeTillBlock > 10:
+                    timeTillBlock -= 10
+                else:
+                    seekTo = 10 - timeTillBlock
+                    
+                playList.insert(0,intro_file)
+                
+            self.__scheduler.enter(timeTillBlock,1,self.play,(duration,playList,seekTo))
             return
-
-    def comp_dates(self, d1, d2):
-        # Date format: %Y-%m-%d %H:%M:%S
-        return time.mktime(time.strptime(d2,"%Y%m%d%H%M%S"))-\
-               time.mktime(time.strptime(d1, "%Y%m%d%H%M%S"))
-
-    def _getFormattedDateTime(self, format = "%Y%m%d%H%M"):
-        return int(datetime.datetime.now().strftime(format))
 
     def _signalTerm(self,signal,frame):
         """Will exit the loop and let the application close.
