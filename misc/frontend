@@ -10,7 +10,7 @@ alsactl restore
 while [ 1 ]
 do
         sleep 2
-        DISPLAY=:0.0 mplayer -idle -slave -quiet -fs -fixed-vo \
-        -input file=/tmp/hyberia_slave.fifo > /tmp/hyberia_mplayer.out
+        DISPLAY=:0.0 mplayer -idle -include /root/.mplayer/config \
+        -slave -input file=/tmp/hyberia_slave.fifo >> /tmp/mplayer.out 2>> /tmp/mplayer.err
         sleep 2
 done
