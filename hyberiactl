@@ -30,7 +30,7 @@ __version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 # default is /etc/hyberia.conf
-CONFIG_FILE = "/etc/hyberia.conf"
+CONFIG_FILE = "cfg/hyberia.conf"
 # ALL OTHER CONFIGURATION ARE DONE IN THIS FILE.
 
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     # Create the console logging if debug level is 10
     if config.getint("logs", "debug_level") == 10:
         ch = logging.StreamHandler()
-        cformatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
+        cformatter = logging.Formatter("[%(levelname)s] %(name)s %(message)s")
         ch.setFormatter(cformatter)
         fh.setLevel(logging.INFO)
         logger.addHandler(ch)
@@ -93,15 +93,6 @@ if __name__ == "__main__":
     if not os.path.isdir(config.get('video', 'location')):
         logger.critical("Can't open video location at %s" % (config.get('video', 'location'), ))
         exit(1)
-    else:
-        logger.debug("Video location %s is usable" % (config.get("video", "location"), ))
-
-    # Video check
-    if not os.path.exists(config.get("video", "intro")):
-        logger.critical("Can't open intro video at %s" % (config.get('video', 'intro'), ))
-        exit(1)
-    else:
-        logger.debug("Intro video available at %s" % (config.get("video", "intro") , ))
 
     # Check: core, slave_socket
     if not os.path.exists(config.get("core", "slave_socket")):
@@ -139,7 +130,7 @@ if __name__ == "__main__":
 
     # Create the Playlist instance
     playlist = playlist.PlayList(mkv)
-    playlist.load(config.get("video", "location"))
+    playlist.load(config.get("core", "playlist"))
 
     # Create the player instance
     player = player.PlayerInterface(config.get("core", "slave_socket"))
