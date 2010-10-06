@@ -30,7 +30,7 @@ __version__ = "0.3.2"
 __contributors__= "Mathieu Charron, Martin Samson"
 
 # default is /etc/hyberia.conf
-CONFIG_FILE = "cfg/hyberia.conf"
+CONFIG_FILE = "/etc/hyberia.conf"
 # ALL OTHER CONFIGURATION ARE DONE IN THIS FILE.
 
 
