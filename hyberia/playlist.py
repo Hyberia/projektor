@@ -104,7 +104,7 @@ class PlayList():
             self.logger.warning("This is a parsing error. Strings in json must be delimited with \" instead of ' .")
             self.logger.critical(e)
             raise PlayListImportErrorException()
-
+        
         #Verify that some data exists
         for elem in ["blocks","resources"]:
             if not elem in playListStruct:
@@ -142,7 +142,6 @@ class PlayList():
                         self.logger.critical("Block %s on %s does not have a %s!" %s (timeBlock,dateBlock,item))
                         raise PlayListImportErrorException()
 
-
                 #blockid is date with seconds, move to unix timestamp
                 blockId = ((int(dateBlock) * 10000) + int(timeBlock)) * 100
                 blockId = datetime.datetime.strptime(str(blockId), "%Y%m%d%H%M%S")
@@ -174,14 +173,27 @@ class PlayList():
 
     def getCurrentBlock(self):
         curTimeId = int(time.time())
-        curBlock = None
-
+        prevBlock = None
         for blockId in self._playList:
+            ''' Loop through the blocks to find the one that should be playing
+            or will play next
+            
+            if the blockId is greater than the curTimeId, it means we either
+            have found the currently playing block or the one that will be played.
+            '''
             if blockId < curTimeId:
-                curBlock = blockId
+                prevBlock = blockId
                 continue
+            else:
+                '''If the previous block totalruntime is greater than the current time
+                return it'''
+                if ( self._blocks[prevBlock]['totalRunTime'] + prevBlock ) > curTimeId:
+                    return self._blocks[prevBlock]
+                else:
+                    return self._blocks[blockId]
 
-            if not curBlock:
-                curBlock = blockId
-            return self._blocks[curBlock]
+        ''' We could fall here if we have reached the last playing block'''
+        if prevBlock:
+            if ( self._blocks[prevBlock]['totalRunTime'] + prevBlock ) > curTimeId:
+                return self._blocks[prevBlock]      
         return None
