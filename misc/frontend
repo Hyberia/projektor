@@ -1,0 +1,16 @@
+#!/bin/sh
+# Author: Mathieu Charron
+
+# Restore the ALSA config. Save them before deployment using
+# `alsa store
+alsactl restore
+
+# Start Xorg
+/usr/bin/X -nolisten tcp &
+while [ 1 ]
+do
+        sleep 2
+        DISPLAY=:0.0 mplayer -idle -include /root/.mplayer/config \
+        -slave -input file=/tmp/hyberia_slave.fifo >> /tmp/mplayer.out 2>> /tmp/mplayer.err
+        sleep 2
+done
