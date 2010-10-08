@@ -99,7 +99,6 @@ class HyberiaDaemon():
         if not block:
             self.logger.info("Nothing to play.")
             self.__scheduler.enter(10,1,self.events, ())
-            #TODO: Get next playing block
             return
 
         self.logger.info("Preparing to play block %s" % block['id'])
@@ -144,10 +143,12 @@ class HyberiaDaemon():
                 #seek to the time it should be playing and remove 1 minute for recovery
                 seekTo = curTime - curPart['playAt'] - 60
 
+                print seekTo
+                
                 if (seekTo < 0):
                     seekTo = 0
                 
-                duration = block['totalRunTime'] - seekTo
+                duration = curPart['duration'] - seekTo
                 
                 self.__scheduler.enter(0,1,self.play,(duration,playList,seekTo))
 
