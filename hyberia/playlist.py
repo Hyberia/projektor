@@ -76,35 +76,22 @@ class PlayList():
 
     def __createPart(self, resource):
         part = {}
-
-        #The video file name
-        part['file'] = resource['file']
-        part['name'] = resource['name']
-
+        if resource.startsWith('#'):    
+            #The video file name
+            part['file'] = resource['file']
+            part['name'] = resource['name']
+        else:
+            part['file'] = resource
+            part['name'] = resource
+            
         #Duration in seconds
         part['duration'] = self.__videoInfoBackend.HVIB_RunningTime(part['file'])
 
         #Will hold when to play the file as a datetime format (yyyymmddhhiiss)
         part['playAt'] = 0
         return part
-
-    def load(self, playListFile):
-        '''Load the playlist file into memory'''
-        self.logger.debug("Loading playlist from %s ." % (playListFile,))
-
-        #Verify the playlist file exists
-        if not os.path.exists(playListFile):
-            self.logger.critical("Playlist file not found.");
-            raise PlayListNotFoundException()
-
-        #Attempt to parse the playlist file
-        try:
-            playListStruct = json.load(open(playListFile, "r"))
-        except Exception as e:
-            self.logger.warning("This is a parsing error. Strings in json must be delimited with \" instead of ' .")
-            self.logger.critical(e)
-            raise PlayListImportErrorException()
-        
+    
+    def __parsePlayList(self):
         #Verify that some data exists
         for elem in ["blocks","resources"]:
             if not elem in playListStruct:
@@ -149,12 +136,23 @@ class PlayList():
 
                 block = self.__createBlock(blockId,dateBlock,timeBlock,blockStruct["name"],blockStruct["description"])
                 for part in blockStruct['parts']:
+                    '''
+                    Part can either be:
+                        - Resource (identified by starting with a #)
+                        - File path.
+                    '''
+                    if part.startsWith('#'):
+                        if not part in playListStruct['resources']:
+                            self.logger.critical("Part %s has no resource file!" % part)
+                            raise PlayListImportErrorException()
 
-                    if not part in playListStruct['resources']:
-                        self.logger.critical("Part %s has no resource file!" % part)
-                        raise PlayListImportErrorException()
-
-                    resource = playListStruct['resources'][part]
+                        resource = playListStruct['resources'][part]
+                    else:
+                        if not os.path.exists(part):
+                            self.logger.critical("Part %s does not exists!" % part)
+                            raise PlayListImportErrorException()
+                        resource = part
+                        
                     part = self.__createPart(resource)
 
                     part['playAt'] = blockId + block['totalRunTime']
@@ -169,7 +167,52 @@ class PlayList():
                 self._blocks[blockId] = block
 
         self.logger.debug(" Loaded %s blocks." % len(self._playList))
+    
+    
+    def __loadCache(self, cacheFile):
+        import pickle
+        try:
+            self._playList = pickle.load(cacheFile)
+        except Exception:
+            self.logger.critical("Error: could not load cache file %s" % cacheFile)
+            return False
+
+    def load(self, playListFile, cacheFile = None):
+        '''Load a playlist either from file or from cache
+        
+        Generating a playlist will take time as mkv information needs to be gathered.
+        Using a binary cache speeds up starting Projektor again if no files are missing.
+        '''
+        
+        if cacheFile != None and os.path.exists(cacheFile):
+            if self.__loadCache(cacheFile):
+                return True
+            
+        '''Load the playlist file into memory'''
+        self.logger.debug("Loading playlist from %s ." % (playListFile,))
+
+        #Verify the playlist file exists
+        if not os.path.exists(playListFile):
+            self.logger.critical("Playlist file not found.");
+            raise PlayListNotFoundException()
+
+        #Attempt to parse the playlist file
+        try:
+            playListStruct = json.load(open(playListFile, "r"))
+        except Exception as e:
+            self.logger.warning("This is a parsing error. Strings in json must be delimited with \" instead of ' .")
+            self.logger.critical(e)
+            raise PlayListImportErrorException()
+        
+        self._parsePlaylist(playListStruct)
         self._playList.sort()
+        
+        if cacheFile != None:
+            try:
+                import pickle
+                pickle.dump(self._playList,cacheFile)
+            except Exception:
+                self.logger.warning("Could not save playlist cache.")
 
     def getCurrentBlock(self):
         curTimeId = int(time.time())
