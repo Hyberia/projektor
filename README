@@ -10,14 +10,10 @@ Version  : 0.2.1
 * Jamie Nadeau     (LP: james2432)
 * Martin Samson    (LP: pyrolian)
 
-contribution from:
-
-* No one yet.
-
 Thanks to:
 
 The MPlayer project for their outstanding player
-Matroska for their great container that doesn't suck.
+Matroska for their great container.
 
 2) Licensing
 ------------
@@ -46,12 +42,8 @@ DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THIS PACKAGE.
 
 * Python 2.6
 * C compiler (gcc)
-* C++ compiler (g++)
 * mkvtoolnix
 * MPlayer with demuxer for you video files
-* Custom xorg configuration (optional)
-* Your video file with specific filename
-* Enough of disk space for the video muxing
 
 
 5) Installation
@@ -107,5 +99,4 @@ Video Container: http://www.matroska.org/node/46
 8) Todo
 -------
 
-* Add support for unicode
 * change behavior to support the .xinitrc setup
