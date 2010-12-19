@@ -76,21 +76,21 @@ class PlayList():
 
     def __createPart(self, resource):
         part = {}
-        if resource.startsWith('#'):    
+        if resource.startsWith('#'):
             #The video file name
             part['file'] = resource['file']
             part['name'] = resource['name']
         else:
             part['file'] = resource
             part['name'] = resource
-            
+
         #Duration in seconds
         part['duration'] = self.__videoInfoBackend.HVIB_RunningTime(part['file'])
 
         #Will hold when to play the file as a datetime format (yyyymmddhhiiss)
         part['playAt'] = 0
         return part
-    
+
     def __parsePlayList(self):
         #Verify that some data exists
         for elem in ["blocks","resources"]:
@@ -112,7 +112,7 @@ class PlayList():
             if not os.path.exists(playListStruct['resources'][resource]['file']):
                 self.logger.critical("Resource %s file (%s) does not exists" % (resource,playListStruct['resources'][resource]['file']))
                 raise PlayListImportErrorException()
-                
+
         for dateBlock in playListStruct["blocks"]:
 
             prev_block_id = 0
@@ -152,7 +152,7 @@ class PlayList():
                             self.logger.critical("Part %s does not exists!" % part)
                             raise PlayListImportErrorException()
                         resource = part
-                        
+
                     part = self.__createPart(resource)
 
                     part['playAt'] = blockId + block['totalRunTime']
@@ -167,8 +167,8 @@ class PlayList():
                 self._blocks[blockId] = block
 
         self.logger.debug(" Loaded %s blocks." % len(self._playList))
-    
-    
+
+
     def __loadCache(self, cacheFile):
         import pickle
         try:
@@ -179,15 +179,15 @@ class PlayList():
 
     def load(self, playListFile, cacheFile = None):
         '''Load a playlist either from file or from cache
-        
+
         Generating a playlist will take time as mkv information needs to be gathered.
         Using a binary cache speeds up starting Projektor again if no files are missing.
         '''
-        
+
         if cacheFile != None and os.path.exists(cacheFile):
             if self.__loadCache(cacheFile):
                 return True
-            
+
         '''Load the playlist file into memory'''
         self.logger.debug("Loading playlist from %s ." % (playListFile,))
 
@@ -203,10 +203,10 @@ class PlayList():
             self.logger.warning("This is a parsing error. Strings in json must be delimited with \" instead of ' .")
             self.logger.critical(e)
             raise PlayListImportErrorException()
-        
-        self._parsePlaylist(playListStruct)
+
+        self.__parsePlayList(playListStruct)
         self._playList.sort()
-        
+
         if cacheFile != None:
             try:
                 import pickle
@@ -220,7 +220,7 @@ class PlayList():
         for blockId in self._playList:
             ''' Loop through the blocks to find the one that should be playing
             or will play next
-            
+
             if the blockId is greater than the curTimeId, it means we either
             have found the currently playing block or the one that will be played.
             '''
@@ -238,5 +238,5 @@ class PlayList():
         ''' We could fall here if we have reached the last playing block'''
         if prevBlock:
             if ( self._blocks[prevBlock]['totalRunTime'] + prevBlock ) > curTimeId:
-                return self._blocks[prevBlock]      
+                return self._blocks[prevBlock]
         return None

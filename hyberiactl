@@ -42,38 +42,28 @@ CONFIG_FILE = "/etc/hyberia.conf"
 import logging, logging.config
 import ConfigParser
 import time, os, sys, json
+from optparse import OptionParser
 # @TODO Something is fishy.
 import hyberia
 from hyberia import *
 
-
-if __name__ == "__main__":
-    # Create the configParser instance
-    config = ConfigParser.SafeConfigParser(hyberia.CONFIG_DEFAULT_VALUE)
-    #print config
-    # Check if the config file exists:
-    if os.path.exists(CONFIG_FILE):
-        #print "Loading config"
-        config.read(CONFIG_FILE)
-    else:
-        print "Cannot load config"
-        # Fatal error, no config file
-        # @FIX: There must be a more elegant way of doing this.
-        exit()
-
+def system_start(standalone, config):
     # Create Logger
     logger = logging.getLogger("hyberia")
     logger.setLevel(config.getint('logs', 'debug_level'))
 
     # Create file handler
-    fh = logging.FileHandler(config.get('logs','main_log'))
+    if not standalone:
+        fh = logging.FileHandler(config.get('logs','main_log'))
 
     # Create the console logging if debug level is 10
-    if config.getint("logs", "debug_level") == 10:
+    if standalone:
         ch = logging.StreamHandler()
         cformatter = logging.Formatter("[%(levelname)s] %(name)s %(message)s")
         ch.setFormatter(cformatter)
-        fh.setLevel(logging.INFO)
+        if not standalone:
+            # since it's not initialize previously
+            fh.setLevel(logging.INFO)
         logger.addHandler(ch)
 
     # Set formating
@@ -81,7 +71,8 @@ if __name__ == "__main__":
     fh.setFormatter(formatter)
 
     # Add the handler to logger
-    logger.addHandler(fh)
+    if not standalone:
+        logger.addHandler(fh)
 
     # Do some sanity check before starting the system
     # @TODO There is no check for permission
@@ -129,16 +120,60 @@ if __name__ == "__main__":
     mkv = mkvutils.MkvUtils(config)
 
     # Create the Playlist instance
-    playlist = playlist.PlayList(mkv)
-    playlist.load(config.get("core", "playlist"))
+    pl = playlist.PlayList(mkv)
+    pl.load(config.get("core", "playlist"))
 
     # Create the player instance
     player = player.PlayerInterface(config.get("core", "slave_socket"))
 
     # Call the daemon
-    daemon = daemon.HyberiaDaemon(playlist, player, config, mkv)
+    daemon = daemon.HyberiaDaemon(pl, player, config, mkv)
     # Enter the loop
     daemon.run()
 
     # We're done
     logger.info("Application run complete")
+
+
+if __name__ == "__main__":
+
+    # Create the parser
+    usage = "usage: %prog [options]"
+    parser = OptionParser(usage=usage)
+    parser.add_option("-c", "--config", dest="configfile",
+                    help="Supply a config file manually", metavar="FILE")
+    parser.add_option("-s", "--standalone", action="store_true", default=False,
+                    help="Run on the foreground with verbose enable")
+    parser.add_option("-t", "--test", action="store_true", default=False,
+                    help="Run video playlist test routine")
+    parser.add_option("-f", "--force", action="store_true", default=False,
+                    help="force and/or reset the video cache")
+
+    # Parse the argument
+    (options, args) = parser.parse_args()
+
+    if  options.standalone and options.test:
+        parser.error("Options -s and -t are mutually exclusive")
+
+    # Create the configParser instance
+    config = ConfigParser.SafeConfigParser(hyberia.CONFIG_DEFAULT_VALUE)
+
+    if options.configfile:
+        # Use the config file passed via the command line
+        CONFIG_FILE = options.configfile
+
+    # Check if the config file exists:
+    if os.path.exists(CONFIG_FILE):
+        #print "Loading config"
+        config.read(CONFIG_FILE)
+    else:
+        print "Cannot load config",
+        # Fatal error, no config file
+        # @FIX: There must be a more elegant way of doing this.
+        exit(1)
+
+    # run the server
+    if options.test:
+        check_start()
+    else:
+        system_start(options.standalone, config)

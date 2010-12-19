@@ -4,6 +4,9 @@
 #vo=xv
 zoom=1
 
+# Use 2 threads for decoding
+lavdopts=threads=2:skiploopfilter=nonkey
+
 # Set audio driver
 ao="alsa:device=ladcomp"
 
