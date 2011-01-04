@@ -173,7 +173,9 @@ class PlayList():
     def __loadCache(self, cacheFile):
         import pickle
         try:
-            self._playList = pickle.load(cacheFile)
+            (p,b) = pickle.load(cacheFile)
+            self._playList = p
+            self._blocks = b
         except Exception:
             self.logger.critical("Error: could not load cache file %s" % cacheFile)
             return False
@@ -211,8 +213,8 @@ class PlayList():
         if cacheFile != None:
             try:
                 import pickle
-                pickle.dump(self._playList,cacheFile)
-            except Exception:
+                pickle.dump([self._playList, self._blocks], open(cacheFile,'wb'))
+            except Exception as e:
                 self.logger.warning("Could not save playlist cache.")
 
     def getCurrentBlock(self):
