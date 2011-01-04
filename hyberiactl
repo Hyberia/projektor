@@ -124,10 +124,10 @@ def system_start(standalone, config):
     pl.load(config.get("core", "playlist"), config.get("core","cache"))
 
     # Create the player instance
-    player = player.PlayerInterface(config.get("core", "slave_socket"))
+    playerObj = player.PlayerInterface(config.get("core", "slave_socket"))
 
     # Call the daemon
-    daemon = daemon.HyberiaDaemon(pl, player, config, mkv)
+    daemon = daemon.HyberiaDaemon(pl, playerObj, config, mkv)
     # Enter the loop
     daemon.run()
 
