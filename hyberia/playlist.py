@@ -76,7 +76,7 @@ class PlayList():
 
     def __createPart(self, resource):
         part = {}
-        if resource.startsWith('#'):
+        if resource.startswith('#'):
             #The video file name
             part['file'] = resource['file']
             part['name'] = resource['name']
@@ -91,7 +91,7 @@ class PlayList():
         part['playAt'] = 0
         return part
 
-    def __parsePlayList(self):
+    def __parsePlayList(self, playListStruct):
         #Verify that some data exists
         for elem in ["blocks","resources"]:
             if not elem in playListStruct:
@@ -141,7 +141,7 @@ class PlayList():
                         - Resource (identified by starting with a #)
                         - File path.
                     '''
-                    if part.startsWith('#'):
+                    if part.startswith('#'):
                         if not part in playListStruct['resources']:
                             self.logger.critical("Part %s has no resource file!" % part)
                             raise PlayListImportErrorException()

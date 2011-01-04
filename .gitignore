@@ -5,3 +5,4 @@ mplayer.out
 build
 uninstall.db
 cfg/geany_run_script.sh
+*.pyc

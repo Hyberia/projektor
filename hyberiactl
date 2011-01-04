@@ -121,7 +121,7 @@ def system_start(standalone, config):
 
     # Create the Playlist instance
     pl = playlist.PlayList(mkv)
-    pl.load(config.get("core", "playlist"))
+    pl.load(config.get("core", "playlist"), config.get("core","cache"))
 
     # Create the player instance
     player = player.PlayerInterface(config.get("core", "slave_socket"))

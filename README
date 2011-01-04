@@ -11,9 +11,8 @@ Version  : 0.2.1
 * Martin Samson    (LP: pyrolian)
 
 Thanks to:
-
-The MPlayer project for their outstanding player
-Matroska for their great container.
+- The MPlayer Project
+- The Matroska Project
 
 2) Licensing
 ------------
@@ -61,29 +60,24 @@ Until there is a better way to install this setup, follow these instructions:
   -uninstall: This will uninstall the application
   -clean: cleans the temporary files created during build
 
-- Now run toueid and check if there is any error in the logs
-  Just hit ctrl+c when you're done (toueid will send SIGTERM to mplayer and
-  touei_run. touei_run does not output anything to the console. You should
-  run a `tail -f` in the log file (default is /tmp/touei_main.log)
+- Now run Projektor and check if there is any error in the logs
+  Just hit ctrl+c when you're done (Projektor will send SIGTERM to mplayer and
+  hyberiactl. hyberiactl does not output anything to the console. You should
+  run a `tail -f` in the log file (default is /tmp/hyberia_main.log)
 
-- Set whatever script you will use to monitor the status of toueid
+- Set whatever script you will use to monitor the status of Projektor
   (The inittab is a good location).
 
 - Enjoy
 
-***** WARNING WARNING ******
-THIS IS A EARLY RELEASE, WE ARE NOT RESPONSABLE IF YOUR MACHINE EXPLODES.
-PLEASE BE AWARE THAT IT IS SOMEWHAT PRODUCTION READY.
-We hope 0.4 will be stable enough for real deployment.
-
 6) Configuration
 ----------------
 
-Please see the touei.conf for the configuration instruction.
+Please see the hyberia.conf for the configuration instruction.
 
-The default location is /etc/touei.conf. You can set a different path
-in the touei_run file (located in /usr/local/bin) but it will break the
-daemon. touei_run can also be run manually if you also start mplayer manually.
+The default location is /etc/hyberia.conf. You can set a different path
+in the hyberia_run file (located in /usr/local/bin) but it will break the
+daemon. hyberiactl can also be run manually if you also start mplayer manually.
 
 Log file are located in /tmp by default. Be aware that they are deleted at
 reboot. You should change that behavior. I wanted to place them in /var
