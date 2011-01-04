@@ -142,11 +142,12 @@ class PlayList():
                         - File path.
                     '''
                     if part.startswith('#'):
+                        part = part[1:]
                         if not part in playListStruct['resources']:
                             self.logger.critical("Part %s has no resource file!" % part)
                             raise PlayListImportErrorException()
 
-                        resource = playListStruct['resources'][part]
+                        resource = playListStruct['resources'][part]['file']
                     else:
                         if not os.path.exists(part):
                             self.logger.critical("Part %s does not exists!" % part)
