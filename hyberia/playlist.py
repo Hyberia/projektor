@@ -219,7 +219,9 @@ class PlayList():
 
     def getCurrentBlock(self):
         curTimeId = int(time.time())
+        self.logger.debug("Current Timeblock is %i" % (curTimeId,))
         prevBlock = None
+        print self._playList
         for blockId in self._playList:
             ''' Loop through the blocks to find the one that should be playing
             or will play next

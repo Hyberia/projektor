@@ -127,9 +127,9 @@ def system_start(standalone, config):
     playerObj = player.PlayerInterface(config.get("core", "slave_socket"))
 
     # Call the daemon
-    daemon = daemon.HyberiaDaemon(pl, playerObj, config, mkv)
+    daemonObj = daemon.HyberiaDaemon(pl, playerObj, config, mkv)
     # Enter the loop
-    daemon.run()
+    daemonObj.run()
 
     # We're done
     logger.info("Application run complete")
