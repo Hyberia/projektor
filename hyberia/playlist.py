@@ -173,12 +173,13 @@ class PlayList():
     def __loadCache(self, cacheFile):
         import pickle
         try:
-            (p,b) = pickle.load(cacheFile)
+            (p,b) = pickle.load(open(cacheFile,'rb'))
             self._playList = p
             self._blocks = b
         except Exception:
             self.logger.critical("Error: could not load cache file %s" % cacheFile)
             return False
+        return True
 
     def load(self, playListFile, cacheFile = None):
         '''Load a playlist either from file or from cache
