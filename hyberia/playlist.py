@@ -190,6 +190,7 @@ class PlayList():
 
         if cacheFile != None and os.path.exists(cacheFile):
             if self.__loadCache(cacheFile):
+                self.logger.info("Using %s cache file as playlist" % cacheFile)
                 return True
 
         '''Load the playlist file into memory'''
@@ -217,12 +218,12 @@ class PlayList():
                 pickle.dump([self._playList, self._blocks], open(cacheFile,'wb'))
             except Exception as e:
                 self.logger.warning("Could not save playlist cache.")
+            self.logger.info("Playlist saved as %s cache file" % cacheFile)
 
     def getCurrentBlock(self):
         curTimeId = int(time.time())
         self.logger.debug("Current Timeblock is %i" % (curTimeId,))
         prevBlock = None
-        print self._playList
         for blockId in self._playList:
             ''' Loop through the blocks to find the one that should be playing
             or will play next
@@ -236,7 +237,7 @@ class PlayList():
             else:
                 '''If the previous block totalruntime is greater than the current time
                 return it'''
-                if ( self._blocks[prevBlock]['totalRunTime'] + prevBlock ) > curTimeId:
+                if prevBlock and ( self._blocks[prevBlock]['totalRunTime'] + prevBlock ) > curTimeId:
                     return self._blocks[prevBlock]
                 else:
                     return self._blocks[blockId]
