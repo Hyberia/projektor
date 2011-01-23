@@ -68,7 +68,8 @@ def system_start(standalone, config):
 
     # Set formating
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    fh.setFormatter(formatter)
+    if not standalone:
+        fh.setFormatter(formatter)
 
     # Add the handler to logger
     if not standalone:
