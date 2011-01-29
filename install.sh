@@ -23,7 +23,7 @@ fi
 
 case "$COMMAND" in
 'install')
-    echo "Installing HYBERIA"
+    echo "Installing HYBERIA Projektor"
     python setup.py $COMMAND --record uninstall.db
 
     echo "Copying support files"
@@ -31,14 +31,20 @@ case "$COMMAND" in
     cp misc/*.otf /usr/share/fonts/hyberia/
     cp misc/projektor-mplayer /usr/local/bin/
 
+    echo "######################################################"
+    echo "## Don't forget to run ./$0 ossetup for system file ##"
+    echo "######################################################"
+#end of install
+;;
+'ossetup')
     echo "Copying OS configuration files"
     cat misc/inittab >> /etc/inittab
     cp misc/xinitrc /etc/X11/xinit/xinitrc.new
+    cp misc/01-disable-dpms.conf /etc/X11/xorg.conf.d/
     cd /etc/X11/xinit/
     mv xinitrc xinitrc.original
     mv xinitrc.new xinitrc
-
-#end of install
+#end of ossetup
 ;;
 'uninstall')
     echo "Uninstalling HYBERIA"
