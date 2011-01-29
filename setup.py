@@ -28,7 +28,7 @@ setup(name='hyberia',
       author_email='mathieu@hyberia.org',
       url='http://hyberia.org',
       packages=['hyberia'],
-      scripts=['hyberiactl', 'hyberiactl', 'hyberia_deploy', 'hyberia_deploy'],
+      scripts=['hyberiactl', 'hyberiactl'],
       data_files=[('/etc/', ["cfg/hyberia.conf"]),
                  ],
      )

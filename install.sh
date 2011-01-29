@@ -29,6 +29,14 @@ case "$COMMAND" in
     echo "Copying support files"
     mkdir /usr/share/fonts/hyberia
     cp misc/*.otf /usr/share/fonts/hyberia/
+    cp misc/projektor-mplayer /usr/local/bin/
+
+    echo "Copying OS configuration files"
+    cat misc/inittab >> /etc/inittab
+    cp misc/xinitrc /etc/X11/xinit/xinitrc.new
+    cd /etc/X11/xinit/
+    mv xinitrc xinitrc.original
+    mv xinitrc.new xinitrc
 
 #end of install
 ;;
