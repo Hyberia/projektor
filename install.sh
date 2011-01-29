@@ -29,11 +29,10 @@ case "$COMMAND" in
     echo "Copying support files"
     mkdir /usr/share/fonts/hyberia
     cp misc/*.otf /usr/share/fonts/hyberia/
-    cp misc/projektor-mplayer /usr/local/bin/
 
-    echo "######################################################"
-    echo "## Don't forget to run ./$0 ossetup for system file ##"
-    echo "######################################################"
+    echo "############################################################"
+    echo "## Don't forget to run install.sh ossetup for system file ##"
+    echo "############################################################"
 #end of install
 ;;
 'ossetup')
