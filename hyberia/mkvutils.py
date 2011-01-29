@@ -130,7 +130,7 @@ class MkvUtils():
         """
         
         assLocation = "%s/intro.ass" % (self._Config.get("video", "tmp-location"))
-        dispText = presentation.split(".")[1].replace("_", " ").title()
+        dispText = presentation.title()
         try:
             if os.path.exists(assLocation):
                 os.unlink(assLocation)

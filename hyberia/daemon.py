@@ -171,7 +171,7 @@ class HyberiaDaemon():
             duration = block['totalRunTime']
             seekTo = 0
             
-            intro_file = self._MkvUtils.generate_intro(playList[0])
+            intro_file = self._MkvUtils.generate_intro(block['name'])
             if intro_file:
                 if timeTillBlock > 10:
                     timeTillBlock -= 10

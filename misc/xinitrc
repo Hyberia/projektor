@@ -1,0 +1,2 @@
+/usr/bin/alsactl restore -d -f /etc/asound.state &
+/usr/local/bin/projektor-mplayer
