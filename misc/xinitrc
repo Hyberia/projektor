@@ -1,2 +1,2 @@
-/usr/bin/alsactl restore -d -f /etc/asound.state &
+/usr/sbin/alsactl restore -d -f /etc/asound.state &
 mplayer -idle -include /root/.mplayer/config -slave -input file=/tmp/hyberia_slave.fifo >> /tmp/mplayer.out 2>> /tmp/mplayer.err
