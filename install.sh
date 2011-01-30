@@ -36,13 +36,20 @@ case "$COMMAND" in
 #end of install
 ;;
 'ossetup')
-    echo "Copying OS configuration files"
-    cat misc/inittab >> /etc/inittab
-    cp misc/xinitrc /etc/X11/xinit/xinitrc.new
-    cp misc/01-disable-dpms.conf /etc/X11/xorg.conf.d/
-    cd /etc/X11/xinit/
-    mv xinitrc xinitrc.original
-    mv xinitrc.new xinitrc
+    echo "OS SETUP. This will change system files."
+    if [ -e /etc/inittab.hyb ]
+    then
+        cp /etc/inittab /etc/inittab.hyb
+        cat misc/inittab >> /etc/inittab
+    fi
+    if [ -e /etc/X11/xinit/xinitrc.hyb ]
+    then
+        cp misc/xinitrc /etc/X11/xinit/xinitrc.new
+        cp misc/01-disable-dpms.conf /etc/X11/xorg.conf.d/
+        cd /etc/X11/xinit/
+        mv xinitrc xinitrc.hyb
+        mv xinitrc.new xinitrc
+    fi
 #end of ossetup
 ;;
 'uninstall')
@@ -51,6 +58,16 @@ case "$COMMAND" in
 
     echo "Cleaning support files"
     rm -rf /usr/share/fonts/hyberia
+
+    echo "Cleaning System modified file."
+    if [ -e /etc/inittab.hyb ]
+        echo "Restoring /etc/inittab"
+        mv /etc/inittab.hyb /etc/inittab
+    fi
+    if [ -e /etc/X11/xinit/xinitrc.hyb ]
+        echo "Restoring /etc/X11/xinit/xinitrc"
+        mv /etc/X11/xinit/xinitrc.hyb /etc/X11/xinit/xinitrc
+    then
 
 #end uninstall
 ;;
