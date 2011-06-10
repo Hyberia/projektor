@@ -6,3 +6,4 @@ build
 uninstall.db
 cfg/geany_run_script.sh
 *.pyc
+.projector_cache.bin
