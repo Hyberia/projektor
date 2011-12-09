@@ -23,14 +23,40 @@ fi
 
 case "$COMMAND" in
 'install')
-    echo "Installing HYBERIA"
+    echo "Installing HYBERIA Projektor"
     python setup.py $COMMAND --record uninstall.db
 
     echo "Copying support files"
     mkdir /usr/share/fonts/hyberia
     cp misc/*.otf /usr/share/fonts/hyberia/
 
+    echo "############################################################"
+    echo "## Don't forget to run install.sh ossetup for system file ##"
+    echo "############################################################"
 #end of install
+;;
+'ossetup')
+    echo "OS SETUP. This will change system files."
+    if [ -e /etc/inittab.hyb ] ;
+    then
+        echo "Inittab already changed"
+    else
+        echo "Updating inittab"
+        cp /etc/inittab /etc/inittab.hyb
+        cat misc/inittab >> /etc/inittab
+    fi
+    if [ -e /etc/X11/xinit/xinitrc.hyb ];
+    then
+        echo "xinitrc already updated"
+    else
+        echo "updating xinitrc"
+        cp misc/xinitrc /etc/X11/xinit/xinitrc.new
+        cp misc/01-disable-dpms.conf /etc/X11/xorg.conf.d/
+        cd /etc/X11/xinit/
+        mv xinitrc xinitrc.hyb
+        mv xinitrc.new xinitrc
+    fi
+#end of ossetup
 ;;
 'uninstall')
     echo "Uninstalling HYBERIA"
@@ -38,6 +64,22 @@ case "$COMMAND" in
 
     echo "Cleaning support files"
     rm -rf /usr/share/fonts/hyberia
+
+    echo "Cleaning System modified file."
+    if [ -e /etc/inittab.hyb ];
+    then
+        echo "Restoring /etc/inittab"
+        mv /etc/inittab.hyb /etc/inittab
+    else
+        echo "no backup for inittab, skipping"
+    fi
+    if [ -e /etc/X11/xinit/xinitrc.hyb ];
+    then
+        echo "Restoring /etc/X11/xinit/xinitrc"
+        mv /etc/X11/xinit/xinitrc.hyb /etc/X11/xinit/xinitrc
+    else
+        echo "no backup for xinitrc"
+    fi
 
 #end uninstall
 ;;

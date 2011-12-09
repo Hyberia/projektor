@@ -1,0 +1,3 @@
+# Hyberia Projektor
+h7:2345:respawn:/bin/su root -l -c '/usr/bin/startx'
+h8:2345:respawn:/bin/su root -l -c '/usr/bin/hyberiactl'
